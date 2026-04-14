@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Folio Admin — Book Suggestions</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/pages.css">
+    <style>
+        /* ── Page layout ── */
+        .suggestions-wrap {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* ── Stats bar at top ── */
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-chip {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 18px 28px;
+            flex: 1;
+            text-align: center;
+        }
+        .stat-chip .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ink);
+            font-family: 'Cormorant Garamond', serif;
+        }
+        .stat-chip .stat-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* ── Individual suggestion card ── */
+        .suggestion-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 260px;
+            gap: 24px;
+            transition: box-shadow 0.2s ease;
+        }
+        .suggestion-card:hover {
+            box-shadow: 0 8px 30px rgba(0,0,0,0.07);
+        }
+
+        /* ── Source tags (university & course) ── */
+        .source-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .source-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.08em;
+            background: #f4f1ea;
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: #8a6e1a;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        /* ── Book metadata ── */
+        .book-title-large {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.7rem;
+            font-weight: 600;
+            margin: 0 0 6px 0;
+            color: var(--ink);
+        }
+        .book-meta {
+            color: #777;
+            font-size: 0.88rem;
+            margin-bottom: 12px;
+        }
+        .book-detail-row {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.65rem;
+            color: #aaa;
+            letter-spacing: 0.06em;
+            line-height: 1.9;
+        }
+
+        /* ── Priority badge ── */
+        .priority-badge {
+            display: inline-block;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .priority-badge.required    { background: rgba(184,92,56,0.1); color: #b85c38; border: 1px solid rgba(184,92,56,0.25); }
+        .priority-badge.recommended { background: rgba(42,74,122,0.1); color: #2a4a7a; border: 1px solid rgba(42,74,122,0.25); }
+
+        /* ── Right panel (price + action) ── */
+        .action-panel {
+            border-left: 1px solid #eee;
+            padding-left: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+        }
+        .action-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #aaa;
+        }
+        .price-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-family: 'DM Mono', monospace;
+            font-size: 1rem;
+            color: var(--ink);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .price-input:focus {
+            border-color: var(--rust, #b85c38);
+        }
+        .add-btn {
+            width: 100%;
+            padding: 13px;
+            background: var(--ink, #171717);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .add-btn:hover { background: var(--rust, #b85c38); }
+        .add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ── Empty state ── */
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+            color: #bbb;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+        }
+        .empty-state .empty-icon { font-size: 3rem; margin-bottom: 16px; }
+        .nav-right {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Make the dashboard chip behave like a button */
+.nav-admin-link {
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.nav-admin-link:hover {
+  transform: translateY(-2px);
+}
+
+.clickable-chip {
+    cursor: pointer;
+    background: var(--ink); /* Assuming #171717 */
+    color: var(--paper);   /* Assuming off-white */
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    transition: background 0.3s ease;
+}
+
+.clickable-chip:hover {
+    background: var(--rust); /* The Folio accent color */
+}
+
+/* Ensure the nav links list is properly spaced */
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links a {
+  text-decoration: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: var(--ink);
+}
+
+#toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #2d4a3e;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 9999;
+}
+
+#toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+/* --- COMPACT TOAST MESSAGES --- */
+.toast {
+    /* Reduce vertical padding significantly */
+    padding: 8px 20px !important; 
+    
+    /* Lower the minimum height */
+    min-height: 40px !important;
+    
+    /* Tighten the text line height */
+    line-height: 1.2 !important;
+    
+    /* Ensure font isn't pushing the height out */
+    font-size: 0.85rem !important;
+    
+    /* Keep width as is */
+    max-width: 400px;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* Fix button height during the 'Adding' state */
+.add-btn {
+    height: 38px !important; /* Forces a fixed, slim height */
+    padding: 0 !important;   /* Removes padding that causes stretching */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    </style>
+</head>
+<body class="bg-folio">
+
+<!-- ── Navigation ── -->
+ <nav class="admin-nav">
+  <a class="nav-logo" href="admin.html">Fo<span>lio</span></a>
+
+  <div class="nav-right">
+     <a href="admin_suggestions.html" class="nav-admin-link">
+      <div class="nav-chip clickable-chip">Book Suggestions</div>
+    </a>
+    <a href="admin.html" class="nav-admin-link">
+      <div class="nav-chip clickable-chip">Admin Dashboard</div>
+    </a>
+
+    <button class="nav-auth-btn" type="button" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- ── Page Header ── -->
+<div class="page-header">
+    <p class="page-eyebrow">— University Insights</p>
+    <h1 class="page-title">Book <em>Suggestions.</em></h1>
+</div>
+
+<!-- ── Main Content ── -->
+<div class="suggestions-wrap">
+
+    <!-- Live stats -->
+    <div class="stats-bar">
+        <div class="stat-chip">
+            <div class="stat-number" id="stat-total">—</div>
+            <div class="stat-label">Total Suggestions</div>
+        </div>
+        <div class="stat-chip">
+            <div class="stat-number" id="stat-universities">—</div>
+            <div class="stat-label">Universities</div>
+        </div>
+        <div class="stat-chip">
+            <div class="stat-number" id="stat-required">—</div>
+            <div class="stat-label">Required Books</div>
+        </div>
+    </div>
+
+    <!-- Cards rendered here -->
+    <div id="suggestions-list">
+        <div class="empty-state">
+            <div class="empty-icon">📚</div>
+            Loading suggestions...
+        </div>
+    </div>
+</div>
+<div id="toast">Added to library ✓</div>
+<script>
+    const API_BASE = 'http://127.0.0.1:8000';
+function showToast(message) {
+    const toast = document.getElementById("toast");
+
+    console.log("TOAST CALLED"); // 🔥 debug
+
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2000);
+}
+    // ── Load and render all suggestions ──
+    async function loadSuggestions() {
+        const authToken = localStorage.getItem('folio_token');
+
+        // Redirect to login if no token found
+        if (!authToken) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/admin/book-suggestions`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+
+            // Handle expired/invalid token
+            if (response.status === 401) {
+                alert("Session expired. Please log in again.");
+                localStorage.clear();
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const suggestionsList = await response.json();
+            renderStats(suggestionsList);
+            renderCards(suggestionsList);
+
+        } catch (networkError) {
+            console.error("Network error:", networkError);
+            document.getElementById('suggestions-list').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    Could not connect to server. Is your backend running?
+                </div>`;
+        }
+    }
+
+    // ── Update the 3 stat chips ──
+    function renderStats(data) {
+        const uniqueUniversities = new Set(data.map(s => s.university)).size;
+        const requiredCount      = data.filter(s => s.priority === 'required').length;
+
+        document.getElementById('stat-total').textContent        = data.length;
+        document.getElementById('stat-universities').textContent = uniqueUniversities;
+        document.getElementById('stat-required').textContent     = requiredCount;
+    }
+
+    // ── Render each suggestion as a card ──
+    function renderCards(data) {
+        const container = document.getElementById('suggestions-list');
+
+        if (data.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">✅</div>
+                    All suggestions have been processed. No pending items.
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = data.map(suggestion => {
+            // Safely encode the suggestion object for inline onclick
+            const encodedData = JSON.stringify(suggestion).replace(/"/g, '&quot;');
+            const priorityClass = suggestion.priority === 'required' ? 'required' : 'recommended';
+
+            return `
+            <div class="suggestion-card" id="card-${suggestion.isbn}">
+
+                <!-- Left: Book Info -->
+                <div>
+                    <div class="source-tags">
+                        <span class="source-tag">🏛 ${suggestion.university}</span>
+                        <span class="source-tag">📖 ${suggestion.course}</span>
+                    </div>
+
+                    <h3 class="book-title-large">${suggestion.title}</h3>
+                    <p class="book-meta">${suggestion.publisher} &nbsp;•&nbsp; Edition ${suggestion.edition} &nbsp;•&nbsp; ${suggestion.category}</p>
+
+                    <div class="book-detail-row">
+                        ISBN: ${suggestion.isbn}<br>
+                        FORMAT: ${suggestion.format.toUpperCase()} &nbsp;|&nbsp;
+                        OPTION: ${suggestion.option.toUpperCase()} &nbsp;|&nbsp;
+                        LANGUAGE: ${suggestion.lang}<br>
+                        COPIES NEEDED: ${suggestion.needed}
+                    </div>
+
+                    <span class="priority-badge ${priorityClass}">
+                        ${suggestion.priority}
+                    </span>
+                </div>
+
+                <!-- Right: Price Input + Add Button -->
+                <div class="action-panel">
+                    <div>
+                        <div class="action-label">Assign Catalog Price (₹)</div>
+                        <input
+                            type="number"
+                            id="price-${suggestion.isbn}"
+                            class="price-input"
+                            placeholder="e.g. 499"
+                            min="1"
+                        >
+                    </div>
+                    <button
+                        class="add-btn"
+                        id="btn-${suggestion.isbn}"
+                        onclick="approveSuggestion('${suggestion.isbn}', ${encodedData})">
+                        ADD TO LIBRARY
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Approve: add to books table + remove from course_books ──
+    async function approveSuggestion(isbn, suggestionData) {
+        const priceInput = document.getElementById(`price-${isbn}`);
+        const enteredPrice = parseFloat(priceInput.value);
+
+        if (!enteredPrice || enteredPrice <= 0) {
+            alert("Please enter a valid price before adding to the library.");
+            priceInput.focus();
+            return;
+        }
+
+        // Attach the price the admin set
+        suggestionData.price = enteredPrice;
+
+        const addButton  = document.getElementById(`btn-${isbn}`);
+        addButton.disabled    = true;
+        addButton.textContent = 'Adding...';
+
+        const authToken = localStorage.getItem('folio_token');
+
+        try {
+            const response = await fetch(`${API_BASE}/admin/approve-suggestion`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify(suggestionData)
+            });
+
+          if (response.ok) {
+    console.log("SUCCESS HIT");   // 🔥 debug
+    showToast("Added to library ✓");
+    const addButton = document.getElementById(`btn-${isbn}`);
+    addButton.textContent = "Added ✓";
+    addButton.style.background = "#2d4a3e";
+
+    const card = document.getElementById(`card-${isbn}`);
+    card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(-10px)';
+
+    setTimeout(() => {
+        card.remove();
+        loadSuggestions();
+    }, 600);
+} else {
+                const errorBody = await response.json();
+                alert("Error: " + errorBody.detail);
+                addButton.disabled    = false;
+                addButton.textContent = 'ADD TO LIBRARY';
+            }
+        } catch (networkError) {
+            alert("Network error. Please check your connection.");
+            addButton.disabled    = false;
+            addButton.textContent = 'ADD TO LIBRARY';
+        }
+    }
+
+    // ── Sign out ──
+    function signOut() {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    }
+
+    // ── Run on page load ──
+    window.onload = loadSuggestions;
+</script>
+</body>
+</html>

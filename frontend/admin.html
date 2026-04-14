@@ -436,17 +436,77 @@
       .form-grid { grid-template-columns: 1fr; }
       .panel-head { flex-direction: column; align-items: flex-start; }
     }
+    /* Container for the right-side elements */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Make the dashboard chip behave like a button */
+.nav-admin-link {
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.nav-admin-link:hover {
+  transform: translateY(-2px);
+}
+
+.clickable-chip {
+    cursor: pointer;
+    background: var(--ink); /* Assuming #171717 */
+    color: var(--paper);   /* Assuming off-white */
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    transition: background 0.3s ease;
+}
+
+.clickable-chip:hover {
+    background: var(--rust); /* The Folio accent color */
+}
+
+/* Ensure the nav links list is properly spaced */
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links a {
+  text-decoration: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: var(--ink);
+}
   </style>
 </head>
 <body>
-  <div class="admin-shell">
-    <nav>
-      <a class="nav-logo" href="admin.html">Fo<span>lio</span></a>
-      <div class="nav-right">
-        <div class="nav-chip">Admin Dashboard</div>
-        <button class="nav-auth-btn" type="button" onclick="signOut()">Sign Out</button>
-      </div>
-    </nav>
+  <nav class="admin-nav">
+  <a class="nav-logo" href="admin.html">Fo<span>lio</span></a>
+
+  <div class="nav-right">
+     <a href="admin_suggestions.html" class="nav-admin-link">
+      <div class="nav-chip clickable-chip">Book Suggestions</div>
+    </a>
+    <a href="admin.html" class="nav-admin-link">
+      <div class="nav-chip clickable-chip">Admin Dashboard</div>
+    </a>
+
+    <button class="nav-auth-btn" type="button" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
 
     <section class="hero">
       <div class="hero-grid">

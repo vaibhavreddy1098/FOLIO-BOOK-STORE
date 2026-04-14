@@ -634,3 +634,122 @@ def get_single_book_details(book_id: int):
     except Exception as error:
         print(f"Server Error: {error}")
         raise HTTPException(status_code=500, detail=str(error))
+# --- FETCH ALL BOOK SUGGESTIONS FOR ADMIN ---
+@router.get("/admin/book-suggestions")
+def get_admin_book_suggestions(request: Request):
+    """
+    Fetches pending book suggestions by joining course_books, 
+    courses, and universities. Corrects the 'university_name' error.
+    """
+    # Security check: Ensure user is an admin
+    admin_only(request)
+
+    db_connection = None
+    try:
+        db_connection = connect_db()
+        db_cursor = db_connection.cursor()
+
+        # UPDATED SQL: Using 'u.name' based on your terminal error logs
+        sql_query = """
+        SELECT
+            COALESCE(u.name, 'Unknown University') AS university_label,
+            COALESCE(c.course_name, 'Unknown Course') AS course_label,
+            cb.book_name,
+            cb.publisher,
+            cb.isbn,
+            cb.copies_needed,
+            cb.type,
+            cb.purchase_option,
+            cb.format,
+            cb.language,
+            cb.edition,
+            cb.category,
+            cb.course_id
+        FROM course_books cb
+        LEFT JOIN courses c ON cb.course_id = c.course_id
+        LEFT JOIN universities u ON c.university_id = u.university_id
+        ORDER BY university_label, course_label
+    """
+        db_cursor.execute(sql_query)
+        suggestion_records = db_cursor.fetchall()
+        db_cursor.close()
+
+        # Map rows to descriptive dictionary objects
+        formatted_suggestions = []
+        for row in suggestion_records:
+            formatted_suggestions.append({
+                "university": row[0],
+                "course":     row[1],
+                "title":      row[2],
+                "publisher":  row[3],
+                "isbn":       row[4],
+                "needed":     row[5],
+                "priority":   row[6],  # 'required' or 'recommended'
+                "option":     row[7],  # 'rent' or 'buy'
+                "format":     row[8],
+                "lang":       row[9],
+                "edition":    row[10],
+                "category":   row[11],
+                "course_id":  row[12]
+            })
+
+        return formatted_suggestions
+
+    except Exception as server_error:
+        print("--- CRITICAL ERROR: SUGGESTION FETCH FAILED ---")
+        print(server_error)
+        raise HTTPException(status_code=500, detail="Internal Database Error: Check terminal logs.")
+
+    finally:
+        if db_connection:
+            db_connection.close()
+
+
+# --- APPROVE SUGGESTION & REMOVE FROM LIST ---
+@router.post("/admin/approve-suggestion")
+def approve_and_transfer_suggestion(request: Request, book_payload: dict = Body(...)):
+    """
+    Moves a book from the suggestions table to the live catalog 
+    and removes the suggestion entry upon success.
+    """
+    admin_only(request)
+
+    db_connection = connect_db()
+    db_cursor = db_connection.cursor()
+
+    try:
+        # Step 1: Insert into the main 'books' table
+        insert_sql = """
+            INSERT INTO books
+            (title, isbn, publisher, price, quantity, type, purchase_option, format, language, edition, category)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        db_cursor.execute(insert_sql, (
+            book_payload["title"],
+            book_payload["isbn"],
+            book_payload["publisher"],
+            book_payload["price"],    # User-defined price from frontend
+            book_payload["needed"],   # Initial stock from copies_needed
+            "new",                    # Default status
+            book_payload["option"],
+            book_payload["format"],
+            book_payload["lang"],
+            book_payload["edition"],
+            book_payload["category"]
+        ))
+
+        # Step 2: Delete from 'course_books' (suggestion cleanup)
+        delete_sql = "DELETE FROM course_books WHERE course_id = %s AND book_name = %s"
+        db_cursor.execute(delete_sql, (book_payload["course_id"], book_payload["title"]))
+
+        db_connection.commit()
+        return {"message": "Success: Book migrated to main catalog."}
+
+    except Exception as transaction_error:
+        db_connection.rollback()
+        print(f"Migration Error: {transaction_error}")
+        raise HTTPException(status_code=400, detail=f"Failed to migrate book: {str(transaction_error)}")
+
+    finally:
+        db_cursor.close()
+        db_connection.close()
