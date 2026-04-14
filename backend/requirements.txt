@@ -10,3 +10,10 @@ python-multipart
 psycopg2-binary
 uvicorn
 -e .
+fastapi
+uvicorn
+pydantic
+python-dotenv
+mysql-connector-python
+passlib[bcrypt]
+python-jose
