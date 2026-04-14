@@ -30,7 +30,12 @@ const MOCK_BOOKS = [
   { id:11, title:'Crime and Punishment',      author:'Fyodor Dostoevsky',  price:279 },
   { id:12, title:'The Brothers Karamazov',    author:'Fyodor Dostoevsky',  price:319 },
 ];
-
+// --- PUT THIS AT THE VERY TOP OF search.js ---
+/* ── GLOBAL NAVIGATION ── */
+window.navigateToDetails = function(id) {
+    if (!id) return;
+    window.location.href = `book_details.html?id=${id}`;
+};
 function getMockBooks(query, type) {
   if (!query) return MOCK_BOOKS;
   const q = query.toLowerCase();
@@ -67,32 +72,56 @@ function setView(view) {
   renderBooks(state.filtered);
 }
 
-/* ── CLIENT-SIDE SORT — no re-fetch ────────────────────────── */
-function sortBooks() {
-  const val   = document.getElementById('sort-select')?.value || '';
-  state.sort  = val;
-  const books = [...state.books];
+/* ── CLIENT-SIDE FILTER & SORT ─────────────────────────────── */
+/* ── THE MASTER FILTER & SORT FUNCTION ── */
+function applyFiltersAndSort() {
+  console.log("Applying filters...");
 
-  if (val === 'title_asc')  books.sort((a, b) => (a.title  || '').localeCompare(b.title  || ''));
-  if (val === 'title_desc') books.sort((a, b) => (b.title  || '').localeCompare(a.title  || ''));
-  if (val === 'author_asc') books.sort((a, b) => (a.author || '').localeCompare(b.author || ''));
-  if (val === 'price_asc')  books.sort((a, b) => (a.price  || 0) - (b.price  || 0));
-  if (val === 'price_desc') books.sort((a, b) => (b.price  || 0) - (a.price  || 0));
+  // 1. Get all checked category values
+  const checkedBoxes = document.querySelectorAll('.genre-filter:checked');
+  const selectedCategories = Array.from(checkedBoxes).map(cb => cb.value.toUpperCase());
+  
+  console.log("Selected Categories:", selectedCategories);
 
-  state.filtered = books;
+  // 2. Filter from the raw data (state.books)
+  let result = state.books.filter(book => {
+    // If nothing is checked, show all books
+    if (selectedCategories.length === 0) return true;
+    
+    // Ensure the book has a category before comparing
+    if (!book.category) return false;
+    
+    return selectedCategories.includes(book.category.toUpperCase());
+  });
+
+  // 3. Apply Sorting from the dropdown
+  const sortVal = document.getElementById('sort-select').value;
+  state.sort = sortVal;
+
+  if (sortVal === 'title_asc')  result.sort((a,b) => (a.title||'').localeCompare(b.title||''));
+  if (sortVal === 'title_desc') result.sort((a,b) => (b.title||'').localeCompare(a.title||''));
+  if (sortVal === 'price_asc')  result.sort((a,b) => (a.price||0) - (b.price||0));
+  if (sortVal === 'price_desc') result.sort((a,b) => (b.price||0) - (a.price||0));
+
+  // 4. Update the filtered state and RENDER
+  state.filtered = result;
+  console.log("Number of books after filter:", state.filtered.length);
   renderBooks(state.filtered);
 }
 
-/* ── CLEAR FILTERS ──────────────────────────────────────────── */
+/* ── UPDATE YOUR CLEAR FILTERS ── */
 function clearFilters() {
-  document.querySelectorAll('.check-item input').forEach(c => c.checked = false);
-  const sel = document.getElementById('sort-select');
-  if (sel) sel.value = '';
-  state.sort     = '';
-  state.filtered = [...state.books];
+  // Uncheck all boxes
+  document.querySelectorAll('.genre-filter').forEach(c => c.checked = false);
+  
+  // Reset sort dropdown
+  const sortDropdown = document.getElementById('sort-select');
+  if (sortDropdown) sortDropdown.value = '';
+  
+  state.sort = '';
+  state.filtered = [...state.books]; // Reset filtered list to full list
   renderBooks(state.filtered);
 }
-
 /* ── MAIN SEARCH — calls backend ────────────────────────────── */
 async function doSearch() {
   const query   = document.getElementById('search-input')?.value.trim() || '';
@@ -111,7 +140,7 @@ async function doSearch() {
 
     console.log("STATE FILTERED:", state.filtered); // 🔥 ADD THIS
 
-    sortBooks();
+    applyFiltersAndSort(); // 🔥 CHANGED FROM sortBooks()
 
   } catch (err) {
     console.error(err);
@@ -150,43 +179,63 @@ function renderBooks(books) {
   grid.innerHTML = books.map((book, i) => bookCardHTML(book, i)).join('');
 }
 
-/* ── BOOK CARD HTML ─────────────────────────────────────────── */
-function bookCardHTML(book, idx) {
-  const color  = SPINE_COLORS[idx % SPINE_COLORS.length];
+/**
+ * Generates the HTML for a book card in the search grid.
+ * Fixes clickability using an anchor wrapper and restores condition/format badges.
+ */
+function bookCardHTML(book_data, index) {
+    const book_id = book_data.book_id || book_data.id;
+    const title_text = escHtml(book_data.title || 'Untitled');
+    const author_name = escHtml(book_data.author || 'Unknown');
+    const spine_color = SPINE_COLORS[index % SPINE_COLORS.length];
+    
+    // Logic to generate the tags/badges string
+    const tags_html = [
+        book_data.type ? `<span class="folio-tag ${book_data.type}">${book_data.type.toUpperCase()}</span>` : '',
+        book_data.purchase_option ? `<span class="folio-tag ${book_data.purchase_option}">${book_data.purchase_option.toUpperCase()}</span>` : '',
+        book_data.format ? `<span class="folio-tag format">${book_data.format.toUpperCase()}</span>` : ''
+    ].filter(Boolean).join('');
 
-  const title  = escHtml(book.title || 'Untitled');
-  const author = escHtml(book.author || '');
+    const rating_value = parseFloat(book_data.rating || 0);
+    const rating_display = rating_value > 0 
+        ? `<div class="rating-row">★ ${rating_value.toFixed(1)} (${book_data.review_count})</div>`
+        : `<div class="rating-row" style="opacity:0.3">No reviews</div>`;
 
-  const stock  = book.stock != null
-    ? `<div class="book-stock">
-        ${book.stock > 0 ? `${book.stock} in stock` : '<span style="color:red">Out of stock</span>'}
-       </div>`
-    : '';
+    return `
+    <div class="book-card">
+        <a href="book_details.html?id=${book_id}" class="card-main-link">
+            <div class="book-spine" style="background:${spine_color};">
+                <span class="book-spine-text">${title_text}</span>
+            </div>
+            
+            <div class="book-body">
+                <div class="book-title">${title_text}</div>
+                ${rating_display}
+                
+                <div class="tag-row">
+                    ${tags_html}
+                </div>
+                
+                <div class="book-author">${author_name}</div>
+                <div class="book-price">₹${book_data.price}</div>
+            </div>
+        </a>
 
-  const id     = book.id ?? idx;
-  const delay  = `${idx * 0.035}s`;
-
-  return `
-    <div class="book-card" style="animation-delay:${delay}">
-      <div class="book-spine" style="background:${color}">
-        <span class="book-spine-text">${title}</span>
-      </div>
-      <div class="book-body">
-        <div class="book-title">${title}</div>
-        ${author ? `<div class="book-author">${author}</div>` : ''}
-        ${stock}
-      </div>
-      <div class="book-footer">
-        <button
-          class="add-cart-btn"
-          data-id="${id}"
-          data-title="${title}"
-          onclick="handleAddToCart(this)"
-        >Add to Cart</button>
-      </div>
+        <div class="book-footer">
+            <button class="add-cart-btn" 
+                    onclick="event.preventDefault(); event.stopPropagation(); handleAddToCart(this)" 
+                    data-id="${book_id}" 
+                    data-title="${title_text}">
+                Add to Cart
+            </button>
+        </div>
     </div>`;
 }
-
+// Function to handle the navigation
+function navigateToDetails(id) {
+    console.log("Navigating to book ID:", id);
+    window.location.href = `book_details.html?id=${id}`;
+}
 /* ── ADD TO CART ────────────────────────────────────────────── */
 async function handleAddToCart(btn) {
   if (!Auth.isLoggedIn()) {
@@ -230,6 +279,34 @@ function showSkeletons() {
       <div class="skel-line half"></div>
     </div>`).join('');
 }
+async function addBook() {
+  const token = localStorage.getItem("folio_token") || localStorage.getItem("access_token");
+
+  const res = await fetch("http://127.0.0.1:8000/admin/add-book", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({
+      title: document.getElementById("title").value,
+      isbn: document.getElementById("isbn").value,
+      publisher: "test",
+      price: parseInt(document.getElementById("price").value),
+      quantity: 10,
+      type: "new",
+      purchase_option: "buy",
+      format: "hardcover",
+      language: "English",
+      edition: 1,
+      category: "CS"
+    })
+  });
+
+  const data = await res.json();
+  console.log("BOOK ADDED:", data);
+  alert("Book Added!");
+}
 
 function setResultsInfo(html) {
   const el = document.getElementById('results-info');
@@ -253,3 +330,11 @@ window.addEventListener('DOMContentLoaded', () => doSearch());
 // Enter key triggers search
 document.getElementById('search-input')
   ?.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+// Listen for clicks on the category checkboxes
+// Add this right near the bottom of search.js, above document.addEventListener('DOMContentLoaded', ...)
+
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('genre-filter') || e.target.id === 'sort-select') {
+    applyFiltersAndSort();
+  }
+});

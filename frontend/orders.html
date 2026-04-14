@@ -125,7 +125,9 @@
     <li><a href="cart.html">Cart</a></li>
     <li><a href="orders.html" class="active">Orders</a></li>
     <li><a href="support.html">Support</a></li>
+    <li><a href="reviews.html">Reviews</a></li>
   </ul>
+  
   <a href="login.html" class="nav-auth" id="nav-auth-btn">Sign In</a>
 </nav>
 
@@ -199,7 +201,7 @@
     const content = document.getElementById('orders-content');
     const filtered = activeFilter === 'all' ? allOrders : allOrders.filter(o => (o.status || '').toLowerCase() === activeFilter);
 
-    const totalSpent = allOrders.reduce((s, o) => s + (o.total || o.amount || 0), 0);
+    const totalSpent = allOrders.reduce((s, o) => s + (o.order_total ?? o.total ?? 0), 0);
     const delivered = allOrders.filter(o => (o.status || '').toLowerCase() === 'delivered').length;
 
     if (allOrders.length === 0) {
@@ -238,7 +240,7 @@
     const id = order.order_id || order.id || (idx + 1001);
     const status = order.status || 'processing';
     const statusClass = `status-${status.toLowerCase()}`;
-    const amount = order.total || order.amount || 0;
+    const amount = order.order_total ?? order.total ?? 0;
     const date = order.created_at || order.date || new Date().toISOString();
     const formattedDate = new Date(date).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
     const items = order.items || order.books || [];

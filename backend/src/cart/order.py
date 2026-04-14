@@ -77,9 +77,6 @@ class OrderManager:
 
     def execute_full_order(self, user_id: int, cart_id: int, order_info: order_desc) -> dict:
         try:
-            if self.already_ordered(user_id):
-               raise MyException("Order limit exceeded", "You can only place one order every 24 hours")
-
             order_id = self.execute_order(user_id, order_info)
             self.order_items(order_id, cart_id)
             self.update_books_table(cart_id)

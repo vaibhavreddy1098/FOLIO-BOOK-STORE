@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Folio — Admin</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --panel: rgba(255,255,255,0.42);
+      --ink: #171717;
+      --muted: #7b746b;
+      --line: rgba(23,23,23,0.12);
+      --accent: #b85c38;
+      --accent-2: #3d6b5e;
+      --shadow: 0 18px 50px rgba(23,23,23,0.08);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'DM Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    .admin-shell {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top right, rgba(184,92,56,0.08), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(61,107,94,0.08), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0.02));
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(244,239,231,0.72);
+    }
+
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .nav-chip {
+      font-size: 0.72rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.35);
+      border-radius: 999px;
+    }
+
+    .nav-auth-btn {
+      text-decoration: none;
+      color: #fff;
+      background: #111;
+      border: 1px solid #111;
+      padding: 14px 18px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      transition: transform .2s ease, opacity .2s ease;
+      cursor: pointer;
+    }
+
+    .nav-auth-btn:hover { transform: translateY(-1px); opacity: 0.92; }
+
+    .hero {
+      padding: 70px 40px 36px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 24px;
+      align-items: end;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      margin: 0 0 16px;
+    }
+
+    .title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.4rem, 7vw, 6.8rem);
+      line-height: 0.92;
+      margin: 0;
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      animation: fadeUp .7s ease both;
+    }
+
+    .title em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--muted);
+    }
+
+    .subtitle {
+      margin-top: 18px;
+      max-width: 760px;
+      font-size: 1rem;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+
+    .hero-card {
+      background: rgba(255,255,255,0.38);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: 28px;
+      padding: 22px;
+      backdrop-filter: blur(10px);
+      animation: floatIn .8s ease both;
+    }
+
+    .hero-card-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .hero-card-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      background: rgba(255,255,255,0.45);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 16px;
+      min-height: 86px;
+    }
+
+    .stat-num {
+      display: block;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .stat-label {
+      display: block;
+      margin-top: 8px;
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .workspace {
+      padding: 34px 40px 60px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      animation: rise .75s ease both;
+    }
+
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      line-height: 1;
+      font-weight: 400;
+    }
+
+    .panel-sub {
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+
+    .panel-body { padding: 20px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    .field label {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.6);
+      color: var(--ink);
+      font-family: 'DM Mono', monospace;
+      padding: 12px 14px;
+      border-radius: 14px;
+      outline: none;
+      transition: border-color .2s ease, transform .2s ease, background .2s ease;
+    }
+
+    .field textarea {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: rgba(23,23,23,0.4);
+      background: rgba(255,255,255,0.8);
+      transform: translateY(-1px);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid #111;
+      background: #111;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.72rem;
+      padding: 14px 18px;
+      border-radius: 0;
+      cursor: pointer;
+      transition: transform .2s ease, opacity .2s ease, background .2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); opacity: 0.92; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .msg {
+      margin-top: 14px;
+      display: none;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .msg.show { display: block; }
+    .msg.ok { background: rgba(61,107,94,0.10); border: 1px solid rgba(61,107,94,0.2); color: var(--accent-2); }
+    .msg.err { background: rgba(184,92,56,0.10); border: 1px solid rgba(184,92,56,0.2); color: var(--accent); }
+
+    .ticket-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .ticket-card {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.55);
+      border-radius: 18px;
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+      transition: transform .2s ease, border-color .2s ease;
+    }
+
+    .ticket-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(23,23,23,0.2);
+    }
+
+    .ticket-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .ticket-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      line-height: 1.1;
+      margin: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(255,255,255,0.5);
+    }
+
+    .badge.assigned { color: #8a5a12; border-color: rgba(138,90,18,0.20); background: rgba(138,90,18,0.08); }
+    /* Add this line below it */
+    .badge.in_progress { color: #2b5c8f; border-color: rgba(43,92,143,0.20); background: rgba(43,92,143,0.08); }
+    .badge.new { color: #2d4a3e; border-color: rgba(45,74,62,0.20); background: rgba(45,74,62,0.08); }
+
+    .ticket-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .ticket-desc {
+      font-size: 0.88rem;
+      line-height: 1.8;
+      color: #3d3a36;
+    }
+
+    .empty-state {
+      border: 1px dashed var(--line);
+      background: rgba(255,255,255,0.35);
+      padding: 20px;
+      border-radius: 18px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.9rem;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateY(18px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1100px) {
+      .hero-grid, .grid { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 780px) {
+      nav, .hero, .workspace { padding-left: 18px; padding-right: 18px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .panel-head { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <nav>
+      <a class="nav-logo" href="admin.html">Fo<span>lio</span></a>
+      <div class="nav-right">
+        <div class="nav-chip">Admin Dashboard</div>
+        <button class="nav-auth-btn" type="button" onclick="signOut()">Sign Out</button>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">— Administration</p>
+          <h1 class="title">Manage <em>books</em>, <br/>review tickets, <br/>keep Folio moving.</h1>
+          <p class="subtitle">
+            This page is only for admins and super admins. Add new books, manage ticket status, and keep the catalog clean without showing student browsing, cart, orders, or support sections.
+          </p>
+        </div>
+        <div class="hero-card">
+          <div class="hero-card-label">Workspace</div>
+          <div class="hero-card-value">Add books<br/>and handle<br/>assigned tickets.</div>
+          <div class="stats">
+            <div class="stat">
+              <span class="stat-num" id="book-count">—</span>
+              <span class="stat-label">Books listed</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num" id="ticket-count">—</span>
+              <span class="stat-label">Assigned tickets</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num" id="role-badge">—</span>
+              <span class="stat-label">Logged in as</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="grid">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-sub">Catalog control</p>
+              <h2 class="panel-title">Add book</h2>
+            </div>
+            <div class="badge">Books table</div>
+          </div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <div class="field">
+                <label for="title">Title</label>
+                <input id="title" type="text" placeholder="DSA Made Easy" />
+              </div>
+              <div class="field">
+                <label for="isbn">ISBN</label>
+                <input id="isbn" type="text" placeholder="ISBN001" />
+              </div>
+              <div class="field">
+                <label for="publisher">Publisher</label>
+                <input id="publisher" type="text" placeholder="Pearson" />
+              </div>
+              <div class="field">
+                <label for="price">Price</label>
+                <input id="price" type="number" min="0" step="0.01" placeholder="500" />
+              </div>
+              <div class="field">
+                <label for="quantity">Quantity</label>
+                <input id="quantity" type="number" min="0" step="1" placeholder="20" />
+              </div>
+              <div class="field">
+                <label for="type">Type</label>
+                <select id="type">
+                  <option value="">Select</option>
+                  <option value="new">New</option>
+                  <option value="used">Used</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="purchase_option">Purchase Option</label>
+                <select id="purchase_option">
+                  <option value="">Select</option>
+                  <option value="rent">Rent</option>
+                  <option value="buy">Buy</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="format">Format</label>
+                <select id="format">
+                  <option value="">Select</option>
+                  <option value="hardcover">Hardcover</option>
+                  <option value="softcover">Softcover</option>
+                  <option value="ebook">Ebook</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="language">Language</label>
+                <input id="language" type="text" placeholder="English" />
+              </div>
+              <div class="field">
+                <label for="edition">Edition</label>
+                <input id="edition" type="number" min="1" step="1" placeholder="1" />
+              </div>
+              <div class="field">
+                <label for="category">Category</label>
+                <input id="category" type="text" placeholder="CS" />
+              </div>
+              <div class="field full">
+                <label for="image_url">Image URL</label>
+                <input id="image_url" type="text" placeholder="https://..." />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn" type="button" onclick="addBook()">Add Book</button>
+              <button class="btn btn-ghost" type="button" onclick="clearBookForm()">Clear</button>
+            </div>
+
+            <div id="book-msg" class="msg"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-sub">Support queue</p>
+              <h2 class="panel-title">Assigned tickets</h2>
+            </div>
+            <div class="badge assigned">status: assigned</div>
+          </div>
+          <div class="panel-body">
+            <div id="ticket-list" class="ticket-list"></div>
+            <div id="ticket-empty" class="empty-state" style="display:none;">
+              No assigned tickets right now. When support assigns a ticket, it appears here.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const BACKEND = 'http://127.0.0.1:8000';
+
+    function getToken() {
+      return localStorage.getItem('folio_token') || localStorage.getItem('access_token') || '';
+    }
+
+    function getRole() {
+      return localStorage.getItem('role') || '';
+    }
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function showMsg(text, type = 'ok') {
+      const el = document.getElementById('book-msg');
+      el.textContent = text;
+      el.className = `msg show ${type}`;
+    }
+
+    function clearBookForm() {
+      ['title','isbn','publisher','price','quantity','type','purchase_option','format','language','edition','category','image_url']
+        .forEach(id => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.value = '';
+        });
+      const msg = document.getElementById('book-msg');
+      msg.className = 'msg';
+      msg.textContent = '';
+    }
+
+    async function addBook() {
+      const token = getToken();
+      if (!token) {
+        showMsg('No token found. Please sign in again.', 'err');
+        return;
+      }
+
+      const payload = {
+        title: document.getElementById('title').value.trim(),
+        isbn: document.getElementById('isbn').value.trim(),
+        publisher: document.getElementById('publisher').value.trim(),
+        price: Number(document.getElementById('price').value),
+        quantity: Number(document.getElementById('quantity').value),
+        type: document.getElementById('type').value,
+        purchase_option: document.getElementById('purchase_option').value,
+        format: document.getElementById('format').value,
+        language: document.getElementById('language').value.trim(),
+        edition: Number(document.getElementById('edition').value),
+        category: document.getElementById('category').value.trim(),
+        image_url: document.getElementById('image_url').value.trim(),
+      };
+
+      for (const [key, value] of Object.entries(payload)) {
+        if (value === '' || Number.isNaN(value)) {
+          showMsg(`Please fill ${key.replaceAll('_', ' ')}.`, 'err');
+          return;
+        }
+      }
+
+      try {
+        const res = await fetch(`${BACKEND}/admin/add-book`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.detail || data.message || `Error ${res.status}`);
+        }
+
+        showMsg(`Book added successfully. Book ID: ${data.book_id ?? 'created'}`, 'ok');
+        alert('✅ Book Added Successfully!');
+        await loadAdminStats();
+      } catch (err) {
+        showMsg(err.message || 'Failed to add book.', 'err');
+      }
+    }
+
+   async function loadAssignedTickets() {
+      const token = getToken();
+      const list = document.getElementById('ticket-list');
+      const empty = document.getElementById('ticket-empty');
+
+      try {
+        const res = await fetch(`${BACKEND}/admin/assigned-tickets`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json().catch(() => []);
+        const tickets = Array.isArray(data) ? data : (data.tickets || []);
+
+        list.innerHTML = '';
+
+        if (!tickets.length) {
+          empty.style.display = 'block';
+          document.getElementById('ticket-count').textContent = '0';
+          return;
+        }
+
+        empty.style.display = 'none';
+        document.getElementById('ticket-count').textContent = String(tickets.length);
+
+        // Render tickets with a hidden reply form that can be toggled
+        list.innerHTML = tickets.map(t => `
+          <div class="ticket-card" id="ticket-${t.ticket_id}">
+            <div class="ticket-top" style="cursor:pointer;" onclick="toggleTicket(${t.ticket_id})">
+              <h3 class="ticket-title">${esc(t.title || 'Untitled ticket')} <span>(Click to Expand)</span></h3>
+              <span class="badge ${esc(t.status)}">${esc(t.status).replace('_', ' ')}</span>
+            </div>
+            <div class="ticket-meta">
+              <span>#${esc(String(t.ticket_id ?? '—'))}</span>
+              <span>${esc(t.category || 'other')}</span>
+              <span>${esc(t.created_by_name || `User ${t.created_by ?? '—'}`)}</span>
+            </div>
+            <div class="ticket-desc">${esc(t.description || '')}</div>
+            
+            <div id="reply-box-${t.ticket_id}" style="display:none; margin-top:15px; border-top:1px solid var(--line); padding-top:15px;">
+                <textarea id="reply-text-${t.ticket_id}" style="width:100%; min-height:80px; border:1px solid var(--line); border-radius:10px; padding:10px; font-family:monospace;" placeholder="Write your reply to the student here..."></textarea>
+                
+                <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
+                    <select id="status-select-${t.ticket_id}" style="padding:8px; border-radius:8px; border:1px solid var(--line);">
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <button class="btn" onclick="sendReply(${t.ticket_id})">Submit Reply</button>
+                </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        empty.style.display = 'block';
+        empty.textContent = 'Could not load assigned tickets.';
+        console.error(err);
+      }
+    }
+
+    // Function to show/hide the reply box
+    function toggleTicket(ticketId) {
+        const replyBox = document.getElementById(`reply-box-${ticketId}`);
+        if (replyBox.style.display === "none") {
+            replyBox.style.display = "block";
+        } else {
+            replyBox.style.display = "none";
+        }
+    }
+
+    // Function to send the reply to the backend
+    async function sendReply(ticketId) {
+        const token = getToken();
+        const replyText = document.getElementById(`reply-text-${ticketId}`).value.trim();
+        const newStatus = document.getElementById(`status-select-${ticketId}`).value;
+
+        if (!replyText) {
+            alert("Please write a reply before submitting.");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${BACKEND}/admin/ticket/reply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    ticket_id: ticketId,
+                    reply_text: replyText,
+                    new_status: newStatus
+                })
+            });
+
+            if (!res.ok) throw new Error("Failed to update ticket");
+            
+            alert("✅ Ticket updated and replied to successfully!");
+            await loadAssignedTickets(); // Reload list to remove completed tickets
+        } catch (err) {
+            alert("❌ Error: " + err.message);
+        }
+    }
+    async function loadAdminStats() {
+      const role = getRole();
+      document.getElementById('role-badge').textContent = role || 'admin';
+      document.getElementById('book-count').textContent = '—';
+    }
+
+    function signOut() {
+      localStorage.removeItem('folio_token');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('role');
+      localStorage.removeItem('user_id');
+      window.location.href = 'login.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      const role = getRole();
+      if (role !== 'admin' && role !== 'super_admin') {
+        window.location.href = 'search.html';
+        return;
+      }
+
+      document.getElementById('role-badge').textContent = role;
+      await loadAdminStats();
+      await loadAssignedTickets();
+    });
+  </script>
+</body>
+</html>

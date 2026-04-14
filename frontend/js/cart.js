@@ -62,6 +62,7 @@ function renderCart() {
   if (!wrap) return;
 
   if (!cartItems.length) {
+    const needsAddress = cartItems.some(item => item.format !== 'ebook');
     wrap.innerHTML = `
       <div class="cart-empty" style="grid-column:1/-1">
         <div class="cart-empty-icon">🛒</div>
@@ -162,7 +163,7 @@ const meta   = `<span class="item-meta">${item.format || ''} · ${item.type || '
           <span class="qty-val" id="qty-${idx}">${qty}</span>
           <button class="qty-btn" onclick="changeQty(${idx}, +1)">+</button>
         </div>
-        <button class="remove-btn" onclick="removeItem(${idx})">Remove</button>
+        <button class="remove-btn" onclick="removeFromCart(${item.book_id})">Remove</button>
       </div>
     </div>`;
 }
@@ -172,7 +173,34 @@ function changeQty(idx, delta) {
   cartItems[idx].quantity = Math.max(1, (cartItems[idx].quantity || 1) + delta);
   renderCart();
 }
+/* ── REMOVE ITEM (API + UI) ── */
+async function removeFromCart(bookId) {
+    const token = localStorage.getItem("folio_token") || localStorage.getItem("access_token");
+    const url = `${BACKEND}/remove_from_cart?book_id=${bookId}`;
 
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            // Success: Remove from local array and re-render
+            cartItems = cartItems.filter(item => item.book_id !== bookId);
+            renderCart();
+            showToast('Item removed from selection', 'ok');
+        } else {
+            const data = await response.json();
+            showToast(data.detail || 'Could not remove item', 'err');
+        }
+    } catch (err) {
+        console.error("Remove error:", err);
+        showToast('Server connection failed', 'err');
+    }
+}
 /* ── REMOVE ITEM ────────────────────────────────────────────── */
 function removeItem(idx) {
   cartItems.splice(idx, 1);

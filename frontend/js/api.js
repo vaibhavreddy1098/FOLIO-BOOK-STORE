@@ -304,7 +304,33 @@ function initNav() {
     btn.onclick     = null;
   }
 }
+async function addBook() {
+  const token = localStorage.getItem("token");
 
+  const res = await fetch("http://localhost:8000/admin/add-book", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({
+      title: document.getElementById("title").value,
+      isbn: document.getElementById("isbn").value,
+      publisher: "test",
+      price: 500,
+      quantity: 10,
+      type: "new",
+      purchase_option: "buy",
+      format: "hardcover",
+      language: "English",
+      edition: 1,
+      category: "CS"
+    })
+  });
+
+  const data = await res.json();
+  console.log(data);
+}
 /** Book spine colour palette — deterministic by index */
 const SPINE_COLORS = [
   '#b85c38', '#4a6fa5', '#2d4a3e', '#7a4f7d',

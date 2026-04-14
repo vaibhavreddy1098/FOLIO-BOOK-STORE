@@ -18,6 +18,7 @@
     <li><a href="cart.html">Cart</a></li>
     <li><a href="orders.html">Orders</a></li>
     <li><a href="support.html">Support</a></li>
+    <li><a href="reviews.html">Reviews</a></li>
   </ul>
   <div class="nav-right">
     <a href="cart.html" class="nav-cart-btn">
@@ -57,57 +58,59 @@
 <!-- ── BODY ── -->
 <div class="body-wrap">
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Sort</div>
-      <select class="sort-select" id="sort-select" onchange="sortBooks()">
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <p class="sidebar-title">SORT</p>
+    <div class="select-wrap">
+      <select id="sort-select" onchange="applyFiltersAndSort()">
         <option value="">Relevance</option>
-        <option value="title_asc">Title A → Z</option>
-        <option value="title_desc">Title Z → A</option>
-        <option value="author_asc">Author A → Z</option>
-        <option value="price_asc">Price Low → High</option>
-        <option value="price_desc">Price High → Low</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+        <option value="title_asc">Title: A to Z</option>
+        <option value="title_desc">Title: Z to A</option>
       </select>
     </div>
+  </div>
 
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Genre</div>
-      <div class="check-item"><input type="checkbox" id="g-fiction"    value="fiction"   /><label for="g-fiction">Fiction</label></div>
-      <div class="check-item"><input type="checkbox" id="g-nonfiction" value="nonfiction"/><label for="g-nonfiction">Non-Fiction</label></div>
-      <div class="check-item"><input type="checkbox" id="g-science"    value="science"   /><label for="g-science">Science</label></div>
-      <div class="check-item"><input type="checkbox" id="g-history"    value="history"   /><label for="g-history">History</label></div>
-      <div class="check-item"><input type="checkbox" id="g-biography"  value="biography" /><label for="g-biography">Biography</label></div>
-      <div class="check-item"><input type="checkbox" id="g-philosophy" value="philosophy"/><label for="g-philosophy">Philosophy</label></div>
-    </div>
+  <div class="sidebar-section" style="margin-top: 30px;">
+    <p class="sidebar-title">CATEGORY</p>
+    
+    <label class="check-item">
+      <input type="checkbox" class="genre-filter" value="CS" onchange="applyFiltersAndSort()">
+      <span>Computer Science</span>
+    </label>
+    
+    <label class="check-item">
+      <input type="checkbox" class="genre-filter" value="ECE" onchange="applyFiltersAndSort()">
+      <span>Electronics (ECE)</span>
+    </label>
+    
+    <label class="check-item">
+      <input type="checkbox" class="genre-filter" value="ME" onchange="applyFiltersAndSort()">
+      <span>Mechanical (ME)</span>
+    </label>
 
-    <div class="sidebar-section">
-      <button class="clear-filters" onclick="clearFilters()">Clear All Filters</button>
-    </div>
-  </aside>
+    <label class="check-item">
+      <input type="checkbox" class="genre-filter" value="EEE" onchange="applyFiltersAndSort()">
+      <span>Electrical (EEE)</span>
+    </label>
+  </div>
 
-  <!-- Results -->
+  <button class="btn-ghost" onclick="clearFilters()">Clear All Filters</button>
+</aside>
   <main class="results-area">
     <div class="results-toolbar">
       <p class="results-info" id="results-info">Search to discover books</p>
       <div class="view-switcher">
-        <button class="view-btn active" id="btn-grid" title="Grid" onclick="setView('grid')">⊞</button>
-        <button class="view-btn"        id="btn-list" title="List" onclick="setView('list')">☰</button>
+        <button class="view-btn active" id="btn-grid" onclick="setView('grid')">⊞</button>
+        <button class="view-btn" id="btn-list" onclick="setView('list')">☰</button>
       </div>
     </div>
 
     <div id="books-grid">
-      <!-- skeletons on first load -->
-      <div class="skel"><div class="skel-cover"></div><div class="skel-line"></div><div class="skel-line half"></div></div>
-      <div class="skel"><div class="skel-cover"></div><div class="skel-line"></div><div class="skel-line half"></div></div>
-      <div class="skel"><div class="skel-cover"></div><div class="skel-line"></div><div class="skel-line half"></div></div>
-      <div class="skel"><div class="skel-cover"></div><div class="skel-line"></div><div class="skel-line half"></div></div>
-      <div class="skel"><div class="skel-cover"></div><div class="skel-line"></div><div class="skel-line half"></div></div>
-      <div class="skel"><div class="skel-cover"></div><div class="skel-line"></div><div class="skel-line half"></div></div>
-    </div>
+        </div>
   </main>
 </div>
-
 <div id="toast"></div>
 
 <footer>
@@ -168,6 +171,60 @@ function setView(v) {
   renderBooks(state.filtered);
 }
 
+/* ── NEW: FILTER & SORT LOGIC ── */
+function applyFiltersAndSort() {
+  // 1. Get selected categories
+  const checkedBoxes = document.querySelectorAll('.genre-filter:checked');
+  const selectedCategories = Array.from(checkedBoxes).map(cb => cb.value.toLowerCase());
+
+  // 2. Filter from the raw state.books
+  let result = state.books.filter(book => {
+    if (selectedCategories.length === 0) return true;
+    if (!book.category) return false;
+    return selectedCategories.includes(book.category.toLowerCase());
+  });
+
+  // 3. Apply Sorting
+  const sortVal = document.getElementById('sort-select').value;
+  state.sort = sortVal;
+
+  if (sortVal === 'title_asc')  result.sort((a,b) => (a.title||'').localeCompare(b.title||''));
+  if (sortVal === 'title_desc') result.sort((a,b) => (b.title||'').localeCompare(a.title||''));
+  if (sortVal === 'price_asc')  result.sort((a,b) => (a.price||0) - (b.price||0));
+  if (sortVal === 'price_desc') result.sort((a,b) => (b.price||0) - (a.price||0));
+
+  state.filtered = result;
+  renderBooks(state.filtered);
+}
+
+/* ── UPDATED: CLEAR FILTERS ── */
+function clearFilters() {
+  document.querySelectorAll('.genre-filter').forEach(c => c.checked = false);
+  document.getElementById('sort-select').value = '';
+  state.sort = '';
+  state.filtered = [...state.books];
+  renderBooks(state.filtered);
+}
+
+/* ── UPDATED: RENDER BOOKS ── */
+function renderBooks(books) {
+  const grid = document.getElementById('books-grid');
+  if (!grid) return;
+
+  grid.className = state.view === 'list' ? 'is-list' : '';
+
+  updateResultsInfo(
+    books.length === 0
+      ? 'No results'
+      : `<strong>${books.length}</strong> book${books.length !== 1 ? 's' : ''}${state.query ? ` for "<em>${escHtml(state.query)}</em>"` : ''}`
+  );
+
+  if (!books.length) {
+    grid.innerHTML = `<div class="state-box"><div class="state-title">No books found matching those filters</div></div>`;
+    return;
+  }
+  grid.innerHTML = books.map((book, i) => bookCardHTML(book, i)).join('');
+}
 /* ── SORT ── */
 function sortBooks() {
   const val = document.getElementById('sort-select').value;
@@ -291,45 +348,53 @@ function renderBooks(books) {
 
 function bookCardHTML(book, idx) {
   const color  = SPINE_COLORS[idx % SPINE_COLORS.length];
-  const title  = escHtml(book.title  || 'Untitled');
-  const author = escHtml(book.author || book.publisher || 'Unknown');
+  const title  = escHtml(book.title || 'Untitled');
+  const author = escHtml(book.author || 'Unknown Author');
   const price  = book.price ? `<div class="book-price">₹${book.price}</div>` : '';
   const id     = book.book_id || book.id || idx;
 
-  // Spine badges (grid view — on cover)
+  // Spine badges — grid view only (on cover)
   const spineBadges = [
     book.type            ? `<span class="spine-badge ${book.type}">${book.type}</span>`                       : '',
     book.purchase_option ? `<span class="spine-badge ${book.purchase_option}">${book.purchase_option}</span>` : '',
     book.format          ? `<span class="spine-badge format">${book.format}</span>`                           : '',
   ].filter(Boolean).join('');
 
-  // Inline badges (list view — beside button)
-  const inlineBadges = [
-    book.type            ? `<span class="inline-badge ${book.type}">${book.type}</span>`                       : '',
-    book.purchase_option ? `<span class="inline-badge ${book.purchase_option}">${book.purchase_option}</span>` : '',
-    book.format          ? `<span class="inline-badge format">${book.format}</span>`                           : '',
+  // Folio tags — list view only (in body)
+  const folioTags = [
+    book.type            ? `<span class="folio-tag ${book.type}">${book.type}</span>`                       : '',
+    book.purchase_option ? `<span class="folio-tag ${book.purchase_option}">${book.purchase_option}</span>` : '',
+    book.format          ? `<span class="folio-tag format">${book.format}</span>`                           : '',
   ].filter(Boolean).join('');
 
+  const ratingVal  = parseFloat(book.rating || 0);
+  const ratingHtml = ratingVal > 0
+    ? `<div class="book-rating" style="color:var(--rust);margin-top:5px;font-size:.9rem;font-family:'DM Mono',monospace;">★ ${ratingVal.toFixed(1)}</div>`
+    : '<div class="rating-row" style="opacity:0.3">No reviews</div>';
+
   return `
-    <div class="book-card" style="animation-delay:${idx*0.035}s">
-      <div class="book-spine" style="background:${color}">
-        <span class="book-spine-text">${title}</span>
-        ${spineBadges ? `<div class="spine-badges">${spineBadges}</div>` : ''}
-      </div>
-      <div class="book-body">
-        <div class="book-title">${title}</div>
-        <div class="book-author">${author}</div>
-        ${price}
-      </div>
+    <div class="book-card" style="animation-delay:${idx*0.035}s" onclick="window.location.href='book_details.html?id=${id}'">
+      <a href="book_details.html?id=${id}" class="card-main-link">
+        <div class="book-spine" style="background:${color}">
+          <span class="book-spine-text">${title}</span>
+          <div class="spine-badges">${spineBadges}</div>
+        </div>
+        <div class="book-body">
+          <div class="book-title">${title}</div>
+          ${ratingHtml}
+          <div class="tag-row">${folioTags}</div>
+          <div class="book-author">${author}</div>
+          ${price}
+        </div>
+      </a>
       <div class="book-footer">
-        <div class="inline-badges">${inlineBadges}</div>
-        <button class="add-cart-btn" id="add-btn-${id}"
-          data-id="${id}" data-title="${title}"
-          onclick="addToCart(this)">Add to Cart</button>
+        <button class="add-cart-btn" data-id="${id}" data-title="${title}"
+          onclick="event.preventDefault();event.stopPropagation();addToCart(this)">
+          Add to Cart
+        </button>
       </div>
     </div>`;
 }
-
 /* ── ADD TO CART ── */
 async function addToCart(btn) {
   const token = localStorage.getItem('access_token') || localStorage.getItem('folio_token');
@@ -419,6 +484,16 @@ window.addEventListener('DOMContentLoaded', () => {
 document.getElementById('search-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') doSearch();
 });
+</script>
+<script>
+const role = localStorage.getItem("role");
+
+if (role === "admin" || role === "super_admin") {
+    document.getElementById("admin-section").style.display = "block";
+
+    // Hide user features
+    document.querySelectorAll(".add-cart-btn").forEach(btn => btn.style.display = "none");
+}
 </script>
 </body>
 </html>

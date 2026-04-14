@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Folio — Book Details</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/main.css"/>
+<style>
+/* ── TOKENS ── */
+:root {
+  --ink:#0d0d0d; --paper:#f5f0e8; --cream:#ede8dc;
+  --rust:#b85c38; --gold:#c9a84c; --muted:#7a7468;
+  --rule:rgba(13,13,13,0.10); --green:#2d4a3e;
+  --font-serif:'Cormorant Garamond',Georgia,serif;
+  --font-mono:'DM Mono',monospace;
+  --t-base:0.2s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:16px;}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-serif);overflow-x:hidden;}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  padding:1.1rem 4rem;background:rgba(245,240,232,0.92);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--rule);}
+.nav-logo{font-size:1.55rem;font-weight:600;letter-spacing:.04em;color:var(--ink);text-decoration:none;}
+.nav-logo span{color:var(--rust);}
+.nav-links{display:flex;gap:2.2rem;list-style:none;}
+.nav-links a{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);text-decoration:none;transition:color var(--t-base);}
+.nav-links a:hover{color:var(--ink);}
+.nav-auth{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--ink);color:var(--paper);border:none;padding:.5rem 1.2rem;text-decoration:none;
+  transition:background var(--t-base);}
+.nav-auth:hover{background:var(--rust);}
+
+/* ── BACK LINK ── */
+.back-link{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);
+  font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);
+  text-decoration:none;padding:1.5rem 4rem .5rem;transition:color var(--t-base);}
+.back-link:hover{color:var(--rust);}
+.back-link::before{content:'←';}
+
+/* ── HERO SECTION ── */
+.book-hero{display:grid;grid-template-columns:1fr 1fr;min-height:70vh;border-bottom:1px solid var(--rule);}
+
+.book-cover-col{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  background:var(--cream);border-right:1px solid var(--rule);padding:4rem;
+  overflow:hidden;
+}
+.cover-deco{position:absolute;width:300px;height:300px;border-radius:50%;
+  border:1px solid var(--rule);top:50%;left:50%;transform:translate(-50%,-50%);}
+.cover-deco-2{position:absolute;width:500px;height:500px;border-radius:50%;
+  border:1px solid var(--rule);top:50%;left:50%;transform:translate(-50%,-50%);}
+
+.book-cover-3d{
+  position:relative;z-index:1;
+  width:220px;height:300px;
+  transform-style:preserve-3d;
+  transform:perspective(1000px) rotateY(-15deg) rotateX(5deg);
+  transition:transform 0.5s ease;
+  animation:floatBook 3s ease-in-out infinite;
+  cursor:pointer;
+}
+.book-cover-3d:hover{transform:perspective(1000px) rotateY(0deg) rotateX(0deg);}
+
+@keyframes floatBook{
+  0%,100%{transform:perspective(1000px) rotateY(-15deg) rotateX(5deg) translateY(0);}
+  50%{transform:perspective(1000px) rotateY(-15deg) rotateX(5deg) translateY(-12px);}
+}
+
+.cover-face{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:1.5rem 1rem;
+  box-shadow:6px 6px 30px rgba(0,0,0,0.25), -2px 0 8px rgba(0,0,0,0.15);
+}
+.cover-face-title{font-size:1.1rem;font-weight:600;color:rgba(255,255,255,0.9);
+  text-align:center;line-height:1.3;margin-bottom:.8rem;}
+.cover-face-pub{font-family:var(--font-mono);font-size:.55rem;letter-spacing:.15em;
+  text-transform:uppercase;color:rgba(255,255,255,0.55);}
+.cover-spine{
+  position:absolute;left:-16px;top:0;width:16px;height:100%;
+  background:rgba(0,0,0,0.25);
+  transform:rotateY(90deg);transform-origin:right center;
+}
+.cover-shadow{
+  position:absolute;bottom:-20px;left:10%;width:80%;height:20px;
+  background:radial-gradient(ellipse,rgba(0,0,0,0.2) 0%,transparent 70%);
+  filter:blur(4px);
+}
+
+/* ── BOOK INFO COL ── */
+.book-info-col{padding:4rem;display:flex;flex-direction:column;justify-content:center;gap:1.5rem;
+  animation:slideInRight .6s ease both;}
+@keyframes slideInRight{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
+
+.book-eyebrow{font-family:var(--font-mono);font-size:.65rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--rust);}
+.book-main-title{font-size:clamp(2.2rem,4vw,3.5rem);font-weight:300;line-height:1.05;
+  letter-spacing:-.02em;}
+.book-main-title em{font-style:italic;}
+.book-publisher{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);}
+
+.book-rating-row{display:flex;align-items:center;gap:1rem;}
+.stars{color:var(--gold);font-size:1.1rem;letter-spacing:.05em;}
+.rating-num{font-size:1.1rem;font-weight:600;}
+.rating-count{font-family:var(--font-mono);font-size:.65rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);}
+
+.book-price-row{display:flex;align-items:baseline;gap:1rem;}
+.book-main-price{font-size:2.8rem;font-weight:600;color:var(--rust);letter-spacing:-.02em;}
+.price-note{font-family:var(--font-mono);font-size:.65rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);}
+
+/* Tags */
+.book-detail-tags{display:flex;flex-wrap:wrap;gap:.5rem;}
+.detail-tag{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.1em;
+  text-transform:uppercase;padding:.35rem .8rem;border-radius:2px;}
+.detail-tag.new{color:#2d4a3e;border:1px solid rgba(45,74,62,.3);background:rgba(45,74,62,.08);}
+.detail-tag.used{color:#8a6e1a;border:1px solid rgba(201,168,76,.4);background:rgba(201,168,76,.1);}
+.detail-tag.rent{color:#b85c38;border:1px solid rgba(184,92,56,.3);background:rgba(184,92,56,.08);}
+.detail-tag.buy{color:#2a4a7a;border:1px solid rgba(74,111,165,.3);background:rgba(74,111,165,.08);}
+.detail-tag.format{color:var(--muted);border:1px solid var(--rule);background:var(--cream);}
+.detail-tag.lang{color:var(--muted);border:1px solid var(--rule);background:var(--cream);}
+
+/* CTA buttons */
+.book-cta{display:flex;gap:1rem;margin-top:.5rem;}
+.btn-add-cart{
+  flex:1;padding:1.1rem;background:var(--ink);color:var(--paper);
+  font-family:var(--font-mono);font-size:.78rem;letter-spacing:.15em;
+  text-transform:uppercase;border:none;cursor:pointer;
+  position:relative;overflow:hidden;transition:background var(--t-base);
+}
+.btn-add-cart:hover:not(:disabled){background:var(--rust);}
+.btn-add-cart:disabled{opacity:.6;cursor:not-allowed;}
+.btn-add-cart .btn-text{transition:opacity var(--t-base);}
+.btn-add-cart.loading .btn-text{opacity:0;}
+.btn-add-cart .spinner{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:18px;height:18px;border:2px solid rgba(245,240,232,.3);
+  border-top-color:var(--paper);border-radius:50%;
+  animation:spin .7s linear infinite;opacity:0;transition:opacity var(--t-base);
+}
+.btn-add-cart.loading .spinner{opacity:1;}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg);}}
+
+.btn-wishlist{
+  padding:1.1rem 1.4rem;background:none;border:1px solid var(--rule);
+  cursor:pointer;font-size:1.1rem;transition:all var(--t-base);color:var(--muted);
+}
+.btn-wishlist:hover{border-color:var(--rust);color:var(--rust);}
+
+/* ── DETAILS STRIP ── */
+.details-strip{display:grid;grid-template-columns:repeat(4,1fr);
+  border-bottom:1px solid var(--rule);background:var(--cream);}
+.detail-item{padding:1.8rem 2rem;border-right:1px solid var(--rule);}
+.detail-item:last-child{border-right:none;}
+.detail-item-label{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;}
+.detail-item-val{font-size:1.1rem;font-weight:600;}
+
+/* ── REVIEWS SECTION ── */
+.reviews-section{padding:4rem;}
+.section-header{display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:2.5rem;padding-bottom:1rem;border-bottom:1px solid var(--rule);}
+.section-title{font-size:2rem;font-weight:300;letter-spacing:-.01em;}
+.section-title em{font-style:italic;}
+.review-count-badge{font-family:var(--font-mono);font-size:.65rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);}
+
+.reviews-grid{display:grid;grid-template-columns:1fr 320px;gap:3rem;align-items:start;}
+
+/* Review cards */
+.reviews-list{display:flex;flex-direction:column;gap:1px;}
+.review-card{
+  background:var(--paper);border:1px solid var(--rule);
+  padding:1.5rem 2rem;
+  animation:fadeUp .4s ease both;
+  transition:background var(--t-base);
+}
+.review-card:hover{background:var(--cream);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.review-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;}
+.reviewer-name{font-size:1rem;font-weight:600;}
+.review-stars{color:var(--gold);font-size:.9rem;letter-spacing:.05em;}
+.review-comment{font-size:1rem;font-weight:300;line-height:1.6;color:var(--muted);}
+.no-reviews{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);padding:3rem 0;text-align:center;border:1px solid var(--rule);}
+
+/* Write review panel */
+.write-review-panel{
+  position:sticky;top:100px;
+  border:1px solid var(--rule);
+  padding:2rem;background:var(--cream);
+}
+.write-review-title{font-size:1.3rem;font-weight:600;margin-bottom:.3rem;}
+.write-review-title em{font-style:italic;}
+.write-review-sub{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.08em;
+  color:var(--muted);margin-bottom:1.5rem;}
+
+/* Star selector */
+.star-selector{display:flex;gap:.3rem;margin-bottom:1.2rem;}
+.star-btn{font-size:1.4rem;background:none;border:none;cursor:pointer;
+  color:var(--rule);transition:color .15s ease;line-height:1;}
+.star-btn.active,.star-btn:hover,.star-btn.hover{color:var(--gold);}
+
+.review-field{margin-bottom:1rem;}
+.review-field label{display:block;font-family:var(--font-mono);font-size:.62rem;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;}
+.review-field textarea{
+  width:100%;padding:.75rem .9rem;background:var(--paper);
+  border:1px solid var(--rule);border-bottom:1px solid var(--ink);
+  font-family:var(--font-serif);font-size:1rem;color:var(--ink);
+  outline:none;resize:none;transition:border-color var(--t-base);
+}
+.review-field textarea:focus{border-color:var(--rust);}
+.review-field textarea::placeholder{color:var(--muted);}
+
+.submit-review-btn{
+  width:100%;padding:.9rem;background:var(--ink);color:var(--paper);
+  font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;
+  text-transform:uppercase;border:none;cursor:pointer;
+  transition:background var(--t-base);
+}
+.submit-review-btn:hover{background:var(--rust);}
+.submit-review-btn:disabled{opacity:.6;cursor:not-allowed;}
+.review-login-note{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.08em;
+  color:var(--muted);text-align:center;margin-top:.8rem;}
+.review-login-note a{color:var(--rust);text-decoration:none;border-bottom:1px solid var(--rust);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:1.8rem;right:1.8rem;background:var(--ink);color:var(--paper);
+  font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;
+  padding:.8rem 1.4rem;transform:translateY(90px);opacity:0;
+  transition:transform .28s ease,opacity .28s ease;z-index:999;pointer-events:none;max-width:320px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.ok{border-left:3px solid #27ae60;}
+.toast.err{border-left:3px solid var(--rust);}
+
+/* ── LOADING STATE ── */
+.page-loader{
+  min-height:60vh;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:1rem;
+}
+.loader-spine{width:60px;height:80px;background:var(--cream);
+  animation:shimmer 1.2s ease infinite;
+  background:linear-gradient(90deg,var(--cream) 25%,var(--paper) 50%,var(--cream) 75%);
+  background-size:400% 100%;}
+@keyframes shimmer{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+.loader-text{font-family:var(--font-mono);font-size:.65rem;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--muted);}
+
+/* ── FOOTER ── */
+footer{padding:2rem 4rem;border-top:1px solid var(--rule);
+  display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
+.footer-logo{font-size:1.15rem;font-weight:600;color:var(--ink);}
+.footer-logo span{color:var(--rust);}
+.footer-copy{font-family:var(--font-mono);font-size:.63rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  nav{padding:1rem 1.5rem;}
+  .nav-links{display:none;}
+  .back-link{padding:1.2rem 1.5rem .5rem;}
+  .book-hero{grid-template-columns:1fr;}
+  .book-cover-col{min-height:320px;padding:3rem;}
+  .book-info-col{padding:2rem 1.5rem;}
+  .details-strip{grid-template-columns:1fr 1fr;}
+  .detail-item:nth-child(2){border-right:none;}
+  .detail-item:nth-child(3){border-top:1px solid var(--rule);}
+  .reviews-section{padding:2rem 1.5rem;}
+  .reviews-grid{grid-template-columns:1fr;}
+  .write-review-panel{position:static;}
+  footer{padding:1.5rem;flex-direction:column;gap:1rem;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="index.html">Fo<span>lio</span></a>
+  <ul class="nav-links">
+    <li><a href="search.html">Browse</a></li>
+    <li><a href="cart.html">Cart</a></li>
+    <li><a href="orders.html">Orders</a></li>
+    <li><a href="support.html">Support</a></li>
+  </ul>
+  <a href="login.html" class="nav-auth" id="nav-auth-btn">Sign In</a>
+</nav>
+
+<a href="search.html" class="back-link">Back to Browse</a>
+
+<!-- ── MAIN CONTENT ── -->
+<div id="page-content">
+  <div class="page-loader">
+    <div class="loader-spine"></div>
+    <div class="loader-text">Loading book…</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="footer-logo">Fo<span>lio</span></div>
+  <p class="footer-copy">© 2026 Folio · All rights reserved</p>
+</footer>
+
+<script>
+const BACKEND = 'http://127.0.0.1:8000';
+const SPINE_COLORS = [
+  '#b85c38','#4a6fa5','#2d4a3e','#7a4f7d',
+  '#5c4a3a','#3d6b5e','#8c3b2a','#4a7c8e',
+];
+
+/* ── GET BOOK ID FROM URL ── */
+const bookId = new URLSearchParams(window.location.search).get('id');
+
+/* ── NAV ── */
+function initNav() {
+  const token = localStorage.getItem('folio_token') || localStorage.getItem('access_token');
+  const btn   = document.getElementById('nav-auth-btn');
+  if (!btn) return;
+  if (token) {
+    btn.textContent = 'Sign Out';
+    btn.href = '#';
+    btn.onclick = e => {
+      e.preventDefault();
+      localStorage.removeItem('folio_token');
+      localStorage.removeItem('access_token');
+      window.location.href = 'login.html';
+    };
+  }
+}
+initNav();
+
+/* ── FETCH BOOK DATA ── */
+async function loadBook() {
+  if (!bookId) {
+    document.getElementById('page-content').innerHTML =
+      `<div class="page-loader"><div class="loader-text">No book ID provided.</div></div>`;
+    return;
+  }
+
+  try {
+    const res  = await fetch(`${BACKEND}/book/${bookId}`);
+    if (!res.ok) throw new Error(`Book not found (${res.status})`);
+    const data = await res.json();
+    renderPage(data);
+  } catch (err) {
+    document.getElementById('page-content').innerHTML =
+      `<div class="page-loader"><div class="loader-text">Failed to load: ${err.message}</div></div>`;
+  }
+}
+
+/* ── RENDER ── */
+function renderPage(data) {
+  const b  = data.book_info;
+  const rs = data.reviews_list || [];
+
+  const color   = SPINE_COLORS[b.id % SPINE_COLORS.length];
+  const avgRating = rs.length
+    ? (rs.reduce((s, r) => s + r.rating, 0) / rs.length).toFixed(1)
+    : null;
+  const stars = avgRating ? '★'.repeat(Math.round(avgRating)) + '☆'.repeat(5 - Math.round(avgRating)) : '';
+
+  const tags = [
+    b.condition_type  ? `<span class="detail-tag ${b.condition_type}">${b.condition_type}</span>` : '',
+    b.purchase_option ? `<span class="detail-tag ${b.purchase_option}">${b.purchase_option}</span>` : '',
+    b.format          ? `<span class="detail-tag format">${b.format}</span>` : '',
+    b.language        ? `<span class="detail-tag lang">${b.language}</span>` : '',
+  ].filter(Boolean).join('');
+
+  document.title = `Folio — ${b.title}`;
+
+  document.getElementById('page-content').innerHTML = `
+
+    <!-- ── HERO ── -->
+    <div class="book-hero">
+
+      <!-- Cover -->
+      <div class="book-cover-col">
+        <div class="cover-deco"></div>
+        <div class="cover-deco-2"></div>
+        <div class="book-cover-3d" style="--cover-color:${color}">
+          <div class="cover-face" style="background:${color}">
+            <div class="cover-face-title">${escHtml(b.title)}</div>
+            <div class="cover-face-pub">${escHtml(b.publisher || '')}</div>
+          </div>
+          <div class="cover-spine" style="background:${shadeColor(color, -30)}"></div>
+          <div class="cover-shadow"></div>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="book-info-col">
+        <p class="book-eyebrow">— ${escHtml(b.category || 'Folio Catalog')}</p>
+        <h1 class="book-main-title">${escHtml(b.title)}<br/><em>${escHtml(b.publisher || '')}</em></h1>
+
+        ${avgRating ? `
+        <div class="book-rating-row">
+          <span class="stars">${stars}</span>
+          <span class="rating-num">${avgRating}</span>
+          <span class="rating-count">${rs.length} review${rs.length !== 1 ? 's' : ''}</span>
+        </div>` : `<div class="rating-count" style="font-family:var(--font-mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">No reviews yet</div>`}
+
+        <div class="book-price-row">
+          <span class="book-main-price">₹${b.price}</span>
+          <span class="price-note">${b.purchase_option === 'rent' ? 'rental price' : 'purchase price'}</span>
+        </div>
+
+        <div class="book-detail-tags">${tags}</div>
+
+        <div class="book-cta">
+          <button class="btn-add-cart" id="main-add-btn" onclick="handleAddToCart()">
+            <span class="btn-text">${b.purchase_option === 'rent' ? 'Rent this Book' : 'Add to Cart'}</span>
+            <span class="spinner"></span>
+          </button>
+          <button class="btn-wishlist" id="btn-wishlist" onclick="toggleWishlist()">♡</button>
+        </div>
+
+        <p style="font-family:var(--font-mono);font-size:.62rem;letter-spacing:.08em;color:var(--muted);">
+          ${b.stock_quantity > 0 ? `✓ In stock — ${b.stock_quantity} available` : '✗ Out of stock'}
+        </p>
+      </div>
+    </div>
+
+    <!-- ── DETAILS STRIP ── -->
+    <div class="details-strip">
+      <div class="detail-item">
+        <div class="detail-item-label">ISBN</div>
+        <div class="detail-item-val">${escHtml(b.isbn || '—')}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-item-label">Edition</div>
+        <div class="detail-item-val">${b.edition || '—'}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-item-label">Format</div>
+        <div class="detail-item-val" style="text-transform:capitalize">${b.format || '—'}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-item-label">Category</div>
+        <div class="detail-item-val">${escHtml(b.category || '—')}</div>
+      </div>
+    </div>
+
+    <!-- ── REVIEWS ── -->
+    <div class="reviews-section">
+      <div class="section-header">
+        <h2 class="section-title">Reader <em>Reviews</em></h2>
+        <span class="review-count-badge">${rs.length} review${rs.length !== 1 ? 's' : ''}</span>
+      </div>
+
+      <div class="reviews-grid">
+
+        <!-- Left: review cards -->
+        <div>
+          ${rs.length === 0
+            ? `<div class="no-reviews">No reviews yet — be the first to share your thoughts.</div>`
+            : rs.map((r, i) => `
+              <div class="review-card" style="animation-delay:${i * 0.07}s">
+                <div class="review-header">
+                  <div class="reviewer-name">${escHtml(r.student_name || 'Anonymous')}</div>
+                  <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+                </div>
+                <div class="review-comment">${escHtml(r.comment || '')}</div>
+              </div>
+            `).join('')
+          }
+        </div>
+
+        <!-- Right: write review -->
+        <div class="write-review-panel" id="review-panel">
+          <div class="write-review-title">Leave a <em>Review</em></div>
+          <div class="write-review-sub">Share your experience with this book</div>
+
+          <div class="star-selector" id="star-selector">
+            ${[1,2,3,4,5].map(n => `
+              <button class="star-btn" data-val="${n}"
+                onmouseover="hoverStars(${n})"
+                onmouseout="unhoverStars()"
+                onclick="selectStar(${n})">★</button>
+            `).join('')}
+          </div>
+
+          <div class="review-field">
+            <label for="review-comment">Your comment</label>
+            <textarea id="review-comment" rows="4"
+              placeholder="What did you think of this book?"></textarea>
+          </div>
+
+          <button class="submit-review-btn" id="submit-review-btn" onclick="submitReview()">
+            Submit Review
+          </button>
+          <p class="review-login-note" id="review-login-note" style="display:none">
+            <a href="login.html">Sign in</a> to leave a review.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  /* After render — check login state for review panel */
+  const token = localStorage.getItem('folio_token') || localStorage.getItem('access_token');
+  if (!token) {
+    document.getElementById('submit-review-btn').style.display = 'none';
+    document.getElementById('review-login-note').style.display = 'block';
+    document.querySelectorAll('.star-btn, #review-comment').forEach(el => el.disabled = true);
+  }
+}
+function toggleWishlist() {
+  const bookId   = new URLSearchParams(window.location.search).get('id');
+  const btn      = document.getElementById('btn-wishlist');
+  const key      = 'folio_wishlist';
+  const wishlist = JSON.parse(localStorage.getItem(key) || '[]');
+  const idx      = wishlist.indexOf(bookId);
+
+  if (idx === -1) {
+    wishlist.push(bookId);
+    btn.textContent = '♥';
+    btn.style.color = '#b85c38';
+    showToast('Added to wishlist');
+  } else {
+    wishlist.splice(idx, 1);
+    btn.textContent = '♡';
+    btn.style.color = '';
+    showToast('Removed from wishlist');
+  }
+  localStorage.setItem(key, JSON.stringify(wishlist));
+}
+
+function initWishlist() {
+  const bookId   = new URLSearchParams(window.location.search).get('id');
+  const wishlist = JSON.parse(localStorage.getItem('folio_wishlist') || '[]');
+  const btn      = document.getElementById('btn-wishlist');
+  if (!btn) return;
+  if (wishlist.includes(bookId)) {
+    btn.textContent = '♥';
+    btn.style.color = '#b85c38';
+  }
+}
+
+initWishlist();
+/* ── STAR HOVER ── */
+let selectedStar = 0;
+function hoverStars(n) {
+  document.querySelectorAll('.star-btn').forEach((btn, i) => {
+    btn.classList.toggle('hover', i < n);
+  });
+}
+function unhoverStars() {
+  document.querySelectorAll('.star-btn').forEach((btn, i) => {
+    btn.classList.remove('hover');
+    btn.classList.toggle('active', i < selectedStar);
+  });
+}
+function selectStar(n) {
+  selectedStar = n;
+  unhoverStars();
+}
+
+/* ── ADD TO CART ── */
+async function handleAddToCart() {
+  const token = localStorage.getItem('folio_token') || localStorage.getItem('access_token');
+  if (!token) {
+    showToast('Sign in to add books to your cart', 'err');
+    setTimeout(() => window.location.href = 'login.html', 1100);
+    return;
+  }
+
+  const btn = document.getElementById('main-add-btn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(
+      `${BACKEND}/add_to_cart?book_id=${bookId}&quantity=1`,
+      { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` } }
+    );
+    if (!res.ok) { const d = await res.json().catch(()=>({})); throw new Error(d.detail || `Error ${res.status}`); }
+    btn.querySelector('.btn-text').textContent = '✓ Added to Cart';
+    btn.style.background = 'var(--green)';
+    showToast('Added to cart!', 'ok');
+    setTimeout(() => {
+      btn.querySelector('.btn-text').textContent = 'Add to Cart';
+      btn.style.background = '';
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }, 2000);
+  } catch (err) {
+    showToast(err.message, 'err');
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+/* ── SUBMIT REVIEW ── */
+async function submitReview() {
+  const token = localStorage.getItem('folio_token') || localStorage.getItem('access_token');
+  const comment = document.getElementById('review-comment')?.value.trim();
+
+  if (!selectedStar) { showToast('Please select a star rating', 'err'); return; }
+  if (!comment)       { showToast('Please write a comment', 'err'); return; }
+
+  const btn = document.getElementById('submit-review-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  try {
+    const res = await fetch(`${BACKEND}/reviews/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
+      body: JSON.stringify({ book_id: parseInt(bookId), rating: selectedStar, comment })
+    });
+    if (!res.ok) { const d = await res.json().catch(()=>({})); throw new Error(d.detail || 'Failed'); }
+    showToast('Review submitted! Refreshing…', 'ok');
+    setTimeout(() => window.location.reload(), 1200);
+  } catch (err) {
+    showToast(err.message, 'err');
+    btn.disabled = false;
+    btn.textContent = 'Submit Review';
+  }
+}
+
+/* ── HELPERS ── */
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function shadeColor(hex, pct) {
+  const n = parseInt(hex.replace('#',''), 16);
+  const r = Math.max(0, Math.min(255, (n >> 16) + pct));
+  const g = Math.max(0, Math.min(255, ((n >> 8) & 0xFF) + pct));
+  const b = Math.max(0, Math.min(255, (n & 0xFF) + pct));
+  return `rgb(${r},${g},${b})`;
+}
+
+let _toastTimer;
+function showToast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+/* ── INIT ── */
+loadBook();
+</script>
+</body>
+</html>

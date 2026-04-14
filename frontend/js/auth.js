@@ -48,9 +48,13 @@ function setButtonLoading(btnId, loading) {
  * Called by the Sign In button (onclick="handleLogin()")
  * and also on Enter keydown.
  */
+/**
+ * Called by the Sign In button (onclick="handleLogin()")
+ * and also on Enter keydown.
+ */
 async function handleLogin() {
   const email    = document.getElementById('email')?.value.trim()    || '';
-  const password = document.getElementById('password')?.value         || '';
+  const password = document.getElementById('password')?.value        || '';
 
   clearMessages();
 
@@ -66,12 +70,35 @@ async function handleLogin() {
 
   setButtonLoading('login-btn', true);
 
-try {
+  try {
     const data = await apiLogin(email, password);
+    
+    // 1. Store all necessary data exactly once
     localStorage.setItem("folio_token", data.access_token);
+    localStorage.setItem("access_token", data.access_token); // Backup for some of your other pages
     localStorage.setItem("user_id", data.user_id);
+    localStorage.setItem("role", data.role);
+
     showFormSuccess('Signed in! Redirecting…');
-    setTimeout(() => window.location.href = 'search.html', 900);
+
+    // 2. Single, clean redirect logic
+    setTimeout(() => {
+        const userRole = data.role;
+        
+        if (userRole === 'super_admin') {
+            window.location.href = 'super_admin.html';  // 👑 Master Control
+            
+        } else if (userRole === 'admin') {
+            window.location.href = 'admin.html';        // 🛠️ Regular Admin
+            
+        } else if (userRole === 'support') {
+            window.location.href = 'support_dashboard.html'; // 🎧 Support Agent
+            
+        } else {
+            window.location.href = 'search.html';       // 🎓 Student
+        }
+    }, 900);
+
   } catch (err) {
     showFormError(err.message || 'Login failed. Please try again.');
   } finally {

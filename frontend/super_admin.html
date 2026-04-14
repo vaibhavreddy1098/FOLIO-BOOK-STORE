@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Folio — Master Control</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+  
+  <style>
+    :root {
+      --bg: #f4efe7; --panel: rgba(255,255,255,0.42); --ink: #171717; --muted: #7b746b;
+      --line: rgba(23,23,23,0.12); --accent: #b85c38; --shadow: 0 18px 50px rgba(23,23,23,0.08); --radius: 24px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: 'DM Mono', monospace; }
+    
+    nav { display: flex; justify-content: space-between; padding: 18px 40px; border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
+    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--ink); text-decoration: none; }
+    .nav-logo span { color: var(--accent); }
+    .nav-auth-btn { text-decoration: none; color: #fff; background: #111; border: none; padding: 14px 18px; text-transform: uppercase; font-size: 0.72rem; cursor: pointer; }
+    
+    .hero { padding: 60px 40px; border-bottom: 1px solid var(--line); }
+    .title { font-family: 'Cormorant Garamond', serif; font-size: 3.5rem; margin: 0; line-height: 1; }
+    
+    .workspace { padding: 40px; max-width: 1200px; margin: 0 auto; display: grid; gap: 30px; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .stat-card { border: 1px solid var(--line); background: rgba(255,255,255,0.5); border-radius: 18px; padding: 25px; text-align: center; }
+    .stat-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 3rem; margin: 0; color: var(--ink); }
+    .stat-card p { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); margin: 5px 0 0 0; letter-spacing: 0.1em; }
+    
+    .panel { border: 1px solid var(--line); background: var(--panel); border-radius: var(--radius); padding:30px; }
+    .panel-title { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; margin: 0 0 5px 0; }
+    
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+    .field { display: flex; flex-direction: column; gap: 8px; }
+    .field label { font-size: 0.7rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em; }
+    .field input, .field select { padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,0.7); font-family: 'DM Mono', monospace; }
+    .field.full { grid-column: 1 / -1; }
+    
+    .btn { background: #111; color: #fff; border: none; padding: 15px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-logo" href="#">Fo<span>lio</span></a>
+    <div style="display:flex; gap:15px; align-items:center;">
+      <span style="font-size: 0.8rem; text-transform:uppercase; color:var(--muted);">Super Admin Level</span>
+      <button class="nav-auth-btn" onclick="signOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <p style="color:var(--accent); text-transform:uppercase; font-size:0.8rem;">— System Overview</p>
+    <h1 class="title">Master Control</h1>
+  </section>
+
+  <section class="workspace">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3 id="stat-books">-</h3>
+        <p>Total Books</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="stat-students">-</h3>
+        <p>Active Students</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="stat-employees">-</h3>
+        <p>Staff Members</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="stat-tickets">-</h3>
+        <p>Tickets Logged</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title">Provision New Staff</h2>
+      <p style="color:var(--muted); font-size:0.9rem; margin-top:0;">Create secure accounts for new Support Agents or Administrators.</p>
+      
+      <div class="form-grid">
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" id="email" placeholder="staff@folio.edu" />
+        </div>
+        <div class="field">
+          <label>Temporary Password</label>
+          <input type="text" id="password" placeholder="SecurePass123" />
+        </div>
+        
+        <div class="field">
+          <label>System Role</label>
+          <select id="role">
+            <option value="support">Support Agent</option>
+            <option value="admin">Administrator</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Aadhaar Number (Unique ID)</label>
+          <input type="text" id="aadhaar" placeholder="123456789012" />
+        </div>
+
+        <div class="field">
+          <label>First Name</label>
+          <input type="text" id="first_name" placeholder="John" />
+        </div>
+        <div class="field">
+          <label>Last Name</label>
+          <input type="text" id="last_name" placeholder="Doe" />
+        </div>
+
+        <div class="field">
+          <label>Phone Number</label>
+          <input type="text" id="phone" placeholder="9876543210" />
+        </div>
+        <div class="field" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <label>Gender</label>
+                <select id="gender">
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <label>Salary (INR)</label>
+                <input type="number" id="salary" placeholder="50000" />
+            </div>
+        </div>
+        
+        <div class="field full">
+          <button class="btn" onclick="addStaff()">Authorize & Create Account</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const BACKEND = 'http://127.0.0.1:8000';
+
+    function getToken() { return localStorage.getItem('folio_token') || localStorage.getItem('access_token') || ''; }
+    function signOut() { localStorage.clear(); window.location.href = 'login.html'; }
+
+    // Protect Page & Load Data
+    window.addEventListener('DOMContentLoaded', async () => {
+      const role = localStorage.getItem('role');
+      if (role !== 'super_admin') { window.location.href = 'login.html'; return; }
+      
+      await fetchStats();
+    });
+
+    async function fetchStats() {
+        const token = getToken();
+        try {
+            const res = await fetch(`${BACKEND}/super/stats`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('stat-books').textContent = data.books;
+                document.getElementById('stat-students').textContent = data.students;
+                document.getElementById('stat-employees').textContent = data.employees;
+                document.getElementById('stat-tickets').textContent = data.tickets;
+            }
+        } catch (e) {
+            console.error("Failed to load stats", e);
+        }
+    }
+
+    async function addStaff() {
+        const token = getToken();
+        
+        const payload = {
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('password').value.trim(),
+            role: document.getElementById('role').value,
+            aadhaar: document.getElementById('aadhaar').value.trim(),
+            first_name: document.getElementById('first_name').value.trim(),
+            last_name: document.getElementById('last_name').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            gender: document.getElementById('gender').value,
+            salary: parseFloat(document.getElementById('salary').value) || 0
+        };
+
+        // Basic Validation
+        if (!payload.email || !payload.password || !payload.aadhaar || !payload.first_name) {
+            alert("Please fill in all mandatory fields.");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${BACKEND}/super/add-staff`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Failed to create staff.");
+
+            alert("✅ " + data.message);
+            
+            // Clear inputs and refresh stats
+            document.querySelectorAll('input').forEach(i => i.value = '');
+            await fetchStats();
+            
+        } catch (err) {
+            alert("❌ " + err.message);
+        }
+    }
+  </script>
+</body>
+</html>

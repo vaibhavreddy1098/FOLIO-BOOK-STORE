@@ -1,0 +1,185 @@
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Folio — Support Agent</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+
+  <style>
+    :root {
+      --bg: #f4efe7; --panel: rgba(255,255,255,0.42); --ink: #171717; --muted: #7b746b;
+      --line: rgba(23,23,23,0.12); --accent: #b85c38; --accent-2: #3d6b5e;
+      --shadow: 0 18px 50px rgba(23,23,23,0.08); --radius: 24px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: 'DM Mono', monospace; }
+    
+    /* Reused UI Classes */
+    nav { display: flex; justify-content: space-between; padding: 18px 40px; border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); background: rgba(244,239,231,0.72); }
+    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--ink); text-decoration: none; }
+    .nav-logo span { color: var(--accent); }
+    .nav-auth-btn { text-decoration: none; color: #fff; background: #111; border: none; padding: 14px 18px; letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.72rem; cursor: pointer; transition: 0.2s ease; }
+    .nav-auth-btn:hover { opacity: 0.8; }
+    
+    .hero { padding: 60px 40px; border-bottom: 1px solid var(--line); display:flex; justify-content: space-between; align-items:center; }
+    .title { font-family: 'Cormorant Garamond', serif; font-size: 4rem; margin: 0; line-height: 1; }
+    .subtitle { margin-top: 15px; max-width: 500px; color: var(--muted); line-height: 1.6; }
+    
+    .workspace { padding: 40px; max-width: 1000px; margin: 0 auto; }
+    .panel { border: 1px solid var(--line); background: var(--panel); box-shadow: var(--shadow); border-radius: var(--radius); padding:25px; }
+    
+    .ticket-card { border: 1px solid var(--line); background: rgba(255,255,255,0.6); border-radius: 18px; padding: 20px; margin-bottom: 15px; display:flex; flex-direction:column; gap:10px; }
+    .ticket-top { display: flex; justify-content: space-between; align-items:center; }
+    .ticket-title { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; margin: 0; }
+    .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; text-transform: uppercase; border: 1px solid var(--line); background: #fff;}
+    .badge.new { color: #2d4a3e; border-color: rgba(45,74,62,0.20); background: rgba(45,74,62,0.08); }
+    .ticket-meta { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; display:flex; gap:15px;}
+    .ticket-desc { line-height: 1.6; font-size: 0.95rem; margin-top: 10px; padding: 15px; background: rgba(255,255,255,0.4); border-left: 3px solid var(--line); }
+    
+    .action-row { display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid var(--line); padding-top: 15px; }
+    .btn-resolve { background: #3d6b5e; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; font-family: 'DM Mono'; }
+    .btn-escalate { background: transparent; color: #b85c38; border: 1px solid #b85c38; padding: 10px 20px; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; font-family: 'DM Mono'; }
+    .btn-resolve:hover { opacity: 0.8; }
+    .btn-escalate:hover { background: rgba(184,92,56,0.1); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-logo" href="#">Fo<span>lio</span></a>
+    <div style="display:flex; gap:15px; align-items:center;">
+      <span style="font-size: 0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted);">Support Portal</span>
+      <button class="nav-auth-btn" onclick="signOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div>
+      <p style="color:var(--accent); text-transform:uppercase; font-size:0.8rem; letter-spacing:0.2em;">— Frontline Support</p>
+      <h1 class="title">Incoming Queue</h1>
+      <p class="subtitle">Review new student tickets. Resolve straightforward issues immediately, or escalate complex database/product issues to the admin team.</p>
+    </div>
+    <div style="text-align:right;">
+        <p style="font-size:0.8rem; color:var(--muted); text-transform:uppercase;">Agent Online</p>
+        <h2 id="agent-email" style="font-family: 'Cormorant Garamond', serif; margin:5px 0 0 0;">Loading...</h2>
+    </div>
+  </section>
+
+  <section class="workspace">
+    <div class="panel">
+      <h2 style="font-family:'Cormorant Garamond', serif; margin:0 0 20px 0;">New Tickets <span id="queue-count" style="font-size:1rem; color:var(--muted);"></span></h2>
+      <div id="support-queue">
+        </div>
+      <div id="empty-state" style="display:none; text-align:center; padding: 40px; color: var(--muted); border: 1px dashed var(--line); border-radius:15px;">
+        Inbox zero! There are currently no new tickets in the queue.
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const BACKEND = 'http://127.0.0.1:8000';
+
+    function getToken() {
+      return localStorage.getItem('folio_token') || localStorage.getItem('access_token') || '';
+    }
+
+    function signOut() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    // Role Protection
+    window.addEventListener('DOMContentLoaded', async () => {
+      const role = localStorage.getItem('role');
+      if (role !== 'support') {
+        window.location.href = 'login.html';
+        return;
+      }
+      // Decode JWT safely (basic frontend decode) to get email
+      try {
+          const token = getToken();
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          document.getElementById('agent-email').textContent = payload.email || "Support Agent";
+      } catch (e) {
+          document.getElementById('agent-email').textContent = "Support Agent";
+      }
+      
+      await loadQueue();
+    });
+
+    async function loadQueue() {
+      const token = getToken();
+      const queue = document.getElementById('support-queue');
+      const empty = document.getElementById('empty-state');
+
+      try {
+        const res = await fetch(`${BACKEND}/support/new-tickets`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const tickets = await res.json();
+
+        queue.innerHTML = '';
+
+        if (!tickets || tickets.length === 0) {
+          empty.style.display = 'block';
+          document.getElementById('queue-count').textContent = '(0)';
+          return;
+        }
+
+        empty.style.display = 'none';
+        document.getElementById('queue-count').textContent = `(${tickets.length})`;
+
+        queue.innerHTML = tickets.map(t => `
+          <div class="ticket-card">
+            <div class="ticket-top">
+              <h3 class="ticket-title">${t.title}</h3>
+              <span class="badge new">New</span>
+            </div>
+            <div class="ticket-meta">
+              <span>Ticket #${t.ticket_id}</span> • 
+              <span>Category: ${t.category}</span> • 
+              <span>From: ${t.student_email}</span>
+            </div>
+            <div class="ticket-desc">${t.description}</div>
+            <div class="action-row">
+                <button class="btn-resolve" onclick="handleTicket(${t.ticket_id}, 'resolve')">✔ Resolve Issue</button>
+                <button class="btn-escalate" onclick="handleTicket(${t.ticket_id}, 'escalate')">⮬ Escalate to Admin</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function handleTicket(ticketId, action) {
+        const token = getToken();
+        
+        // Confirm action
+        const actionText = action === 'resolve' ? 'mark this ticket as resolved' : 'escalate this ticket to an admin';
+        if (!confirm(`Are you sure you want to ${actionText}?`)) return;
+
+        try {
+            const res = await fetch(`${BACKEND}/support/ticket/action`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ ticket_id: ticketId, action: action })
+            });
+
+            if (!res.ok) throw new Error("Failed to process ticket");
+            
+            // Reload the queue to remove the ticket
+            await loadQueue();
+        } catch (err) {
+            alert("Error: " + err.message);
+        }
+    }
+  </script>
+</body>
+</html>

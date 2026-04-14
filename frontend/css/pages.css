@@ -1002,3 +1002,482 @@
   gap: 0.4rem;
   padding: 0;
 }
+.cart-empty-wrap {
+  min-height: calc(100vh - 220px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem 5rem;
+}
+
+.cart-empty-card {
+  width: min(560px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.cart-empty-icon {
+  font-size: 4.5rem;
+  line-height: 1;
+  opacity: 0.28;
+  margin-bottom: 0.5rem;
+}
+
+.cart-empty-title {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.cart-empty-subtitle {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+.cart-empty-btn {
+  margin-top: 0.8rem;
+  display: inline-block;
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  border: 1px solid var(--ink);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.cart-empty-btn:hover {
+  background: var(--rust);
+  border-color: var(--rust);
+}
+/* Folio Custom Checkbox Styling */
+
+/* 1. Hide the default, ugly browser checkbox */
+.check-item input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* 2. Style the custom checkmark base state */
+.check-item span:before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+    vertical-align: middle;
+    background-color: transparent;
+    border: 1px solid rgba(23,23,23,0.3); /* Subtle border matching your design */
+    border-radius: 4px; /* Matches your overall radius style */
+    transition: all 0.15s ease-out; /* Smooth hover and click states */
+    cursor: pointer;
+}
+
+/* 3. Style the "Hover" state */
+.check-item:hover input[type="checkbox"] ~ span:before {
+    border-color: rgba(23,23,23,0.8);
+    background-color: rgba(23,23,23,0.03); /* Muted hint of color on hover */
+}
+
+/* 4. Style the "Checked" state (Activated) */
+.check-item input[type="checkbox"]:checked ~ span:before {
+    background-color: #171717; /* Use your main 'Ink' color for the fill */
+    border-color: #171717;
+}
+
+/* 5. Add the actual white "checkmark" tick inside the box using another pseudo-element */
+.check-item span:after {
+    content: '';
+    position: absolute;
+    opacity: 0; /* Hidden initially */
+    transition: all 0.1s ease-in;
+    
+    /* Position and draw the tick mark using borders and rotation */
+    left: 7px;
+    top: 6px;
+    width: 5px;
+    height: 9px;
+    border: solid #fff; /* White checkmark */
+    border-width: 0 2px 2px 0; /* Draws two sides of the square */
+    transform: rotate(45deg) scale(0); /* Rotated to look like a tick */
+}
+
+/* 6. Reveal the checkmark tick when the input is actually checked */
+.check-item input[type="checkbox"]:checked ~ span:after {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+}
+
+/* 7. Make sure the container is positioned relatively so the ticks don't float away */
+.check-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+/* --- Sidebar Polish --- */
+
+/* 1. Style the Sidebar Titles (SORT, CATEGORY) */
+.sidebar-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 5px;
+}
+
+/* 2. Style the Sort Dropdown Container */
+.select-wrap {
+    position: relative;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.select-wrap select {
+    width: 100%;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    background: var(--panel); /* Glass effect */
+    border: 1px solid var(--line);
+    padding: 10px 15px;
+    border-radius: 12px;
+    color: var(--ink);
+    cursor: pointer;
+    appearance: none; /* Removes default arrow */
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+/* Add a custom arrow for the dropdown */
+.select-wrap:after {
+    content: '↓';
+    font-size: 0.8rem;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+}
+
+.select-wrap select:hover {
+    border-color: var(--ink);
+    background: rgba(255,255,255,0.6);
+}
+
+/* 3. Style the Clear All Filters Button */
+.btn-ghost {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.btn-ghost:hover {
+    background: #171717;
+    color: #fff;
+    border-color: #171717;
+    transform: translateY(-1px);
+}
+
+/* Remove the awkward box-shadow or default borders if any */
+#sort-select, .clear-btn {
+    box-shadow: none;
+}
+/* Sidebar and Filter Polish */
+.sidebar-section { margin-bottom: 30px; }
+.sidebar-title { 
+    font-family: 'DM Mono', monospace; font-size: 0.7rem; 
+    letter-spacing: 0.2em; color: #999; text-transform: uppercase;
+    border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 15px;
+}
+
+/* Custom Checkbox Alignment */
+.check-item {
+    display: flex; align-items: center; margin-bottom: 12px;
+    font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; cursor: pointer;
+}
+.check-item input { margin-right: 12px; width: 18px; height: 18px; cursor: pointer; }
+
+/* Ghost Button Styling */
+.btn-ghost {
+    background: transparent; border: 1px solid rgba(0,0,0,0.1);
+    font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em;
+    padding: 10px; width: 100%; cursor: pointer; transition: 0.3s;
+}
+.btn-ghost:hover { background: #171717; color: #fff; }
+.book-card {
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.book-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.book-card:hover .book-title {
+    color: var(--accent);
+}
+/* Ensure the card feels interactive */
+.card-main-link {
+    transition: background 0.2s ease;
+}
+
+.book-card:hover .card-main-link {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+/* Important: Make sure the footer doesn't block the link by accident */
+.book-footer {
+    pointer-events: auto;
+}
+
+/* --- Updated Card Interaction --- */
+
+.book-card {
+  cursor: pointer;
+  position: relative;
+}
+
+.book-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+/* Let the card handle the click, not the text inside */
+.book-spine, .book-body {
+    pointer-events: none;
+}
+
+/* Keep the footer/button clickable separately */
+.book-footer {
+    pointer-events: auto;
+}
+
+.book-card:hover .book-title {
+    color: var(--rust);
+}
+/* ── FOLIO TAGS (book body — all views) ─────────────────────── */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.4rem 0;
+}
+.folio-tag {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+  color: var(--muted);
+}
+.folio-tag.new    { color: #2d4a3e; border-color: rgba(45,74,62,0.3);   background: rgba(45,74,62,0.06); }
+.folio-tag.used   { color: #8a6e1a; border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.08); }
+.folio-tag.rent   { color: #b85c38; border-color: rgba(184,92,56,0.3);  background: rgba(184,92,56,0.06); }
+.folio-tag.buy    { color: #2a4a7a; border-color: rgba(74,111,165,0.3); background: rgba(74,111,165,0.08); }
+.folio-tag.format { color: var(--muted); }
+.book-spine, .book-body {
+    pointer-events: none;
+}
+/* ── CARD LINK ───────────────────────────────────────────────── */
+.card-main-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ── FOLIO TAGS ──────────────────────────────────────────────── */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.4rem 0 0.5rem;
+}
+.folio-tag {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+  color: var(--muted);
+}
+.folio-tag.new    { color:#2d4a3e; border-color:rgba(45,74,62,.3);   background:rgba(45,74,62,.06); }
+.folio-tag.used   { color:#8a6e1a; border-color:rgba(201,168,76,.4); background:rgba(201,168,76,.08); }
+.folio-tag.rent   { color:#b85c38; border-color:rgba(184,92,56,.3);  background:rgba(184,92,56,.06); }
+.folio-tag.buy    { color:#2a4a7a; border-color:rgba(74,111,165,.3); background:rgba(74,111,165,.08); }
+.folio-tag.format { color:var(--muted); }
+
+/* Show tag-row in list view */
+#books-grid.is-list .tag-row { display: flex; }
+.card-main-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+  margin: .4rem 0 .5rem;
+}
+.folio-tag {
+  font-family: var(--font-mono);
+  font-size: .55rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: .15rem .5rem;
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+  color: var(--muted);
+}
+.folio-tag.new    { color:#2d4a3e; border-color:rgba(45,74,62,.3);   background:rgba(45,74,62,.06); }
+.folio-tag.used   { color:#8a6e1a; border-color:rgba(201,168,76,.4); background:rgba(201,168,76,.08); }
+.folio-tag.rent   { color:#b85c38; border-color:rgba(184,92,56,.3);  background:rgba(184,92,56,.06); }
+.folio-tag.buy    { color:#2a4a7a; border-color:rgba(74,111,165,.3); background:rgba(74,111,165,.08); }
+.folio-tag.format { color:var(--muted); }
+#books-grid.is-list .tag-row { display: flex; }
+/* ── FOLIO TAGS in book body (list view) ────────────────────── */
+.tag-row {
+  display: none;        /* hidden in grid — spine badges handle it */
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.4rem 0 0.3rem;
+}
+#books-grid.is-list .tag-row { display: flex; }  /* show in list view */
+
+.folio-tag {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+  color: var(--muted);
+}
+.folio-tag.new    { color:#2d4a3e; border-color:rgba(45,74,62,.3);   background:rgba(45,74,62,.06); }
+.folio-tag.used   { color:#8a6e1a; border-color:rgba(201,168,76,.4); background:rgba(201,168,76,.08); }
+.folio-tag.rent   { color:#b85c38; border-color:rgba(184,92,56,.3);  background:rgba(184,92,56,.06); }
+.folio-tag.buy    { color:#2a4a7a; border-color:rgba(74,111,165,.3); background:rgba(74,111,165,.08); }
+.folio-tag.format { color:var(--muted); }
+
+/* Card link */
+.card-main-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+/* ── LIST VIEW CARD OVERRIDES — FULL REDESIGN ───────────────── */
+#books-grid.is-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+#books-grid.is-list .book-card {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.2rem 1.5rem;
+  border-top: none;
+  border-bottom: 1px solid var(--rule);
+  border-left: none;
+  border-right: none;
+  transform: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+}
+#books-grid.is-list .book-card:first-child { border-top: 1px solid var(--rule); }
+#books-grid.is-list .book-card:hover       { background: var(--cream); }
+
+/* Spine — small vertical thumbnail */
+#books-grid.is-list .book-spine {
+  width: 60px;
+  height: 80px;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+#books-grid.is-list .book-spine-text {
+  font-size: 0.55rem;
+}
+#books-grid.is-list .spine-badges { display: none; } /* hide spine badges in list */
+
+/* Body — horizontal info block */
+#books-grid.is-list .book-body {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+#books-grid.is-list .book-title  { font-size: 1.05rem; margin: 0; }
+#books-grid.is-list .book-author { margin: 0; }
+#books-grid.is-list .book-price  { margin: 0; }
+
+/* Tag row — horizontal in list */
+#books-grid.is-list .tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.3rem 0;
+}
+
+/* Footer — right side with button only */
+#books-grid.is-list .book-footer {
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+#books-grid.is-list .add-cart-btn {
+  width: 120px;
+  white-space: nowrap;
+  padding: 0.6rem 1rem;
+}
+
+/* card-main-link must not break grid */
+#books-grid.is-list .card-main-link {
+  display: grid;
+  grid-column: 1 / 3;
+  grid-template-columns: 80px 1fr;
+  gap: 1.5rem;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}

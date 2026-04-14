@@ -18,6 +18,7 @@
     <li><a href="cart.html" class="active">Cart</a></li>
     <li><a href="orders.html">Orders</a></li>
     <li><a href="support.html">Support</a></li>
+    <li><a href="reviews.html">Reviews</a></li>
   </ul>
   <a href="login.html" class="nav-auth" id="nav-auth-btn">Sign In</a>
 </nav>
@@ -88,12 +89,14 @@ localStorage.removeItem('access_token'); window.location.href='login.html'; };
     const wrap = document.getElementById('cart-wrap');
     if (!cartItems || cartItems.length === 0) {
       wrap.innerHTML = `
-        <div class="cart-empty" style="grid-column:1/-1">
-          <div class="cart-empty-icon">🛒</div>
-          <div class="cart-empty-title">Your cart is empty</div>
-          <div class="cart-empty-sub">Add some books to get started</div>
-          <a href="search.html" class="browse-link">Browse Books</a>
-        </div>`;
+        <div class="cart-empty-wrap">
+  <div class="cart-empty-card">
+    <div class="cart-empty-icon">🛒</div>
+    <h2 class="cart-empty-title">Your cart is empty</h2>
+    <p class="cart-empty-subtitle">Add some books to get started</p>
+    <a href="search.html" class="cart-empty-btn">Browse Books</a>
+  </div>
+</div>`;
       return;
     }
 

@@ -16,10 +16,19 @@
     <li><a href="cart.html">Cart</a></li>
     <li><a href="orders.html">Orders</a></li>
     <li><a href="support.html">Support</a></li>
+    <li><a href="reviews.html">Reviews</a></li>    
   </ul>
   <a class="nav-cta" href="login.html" id="nav-auth-btn">Sign In</a>
 </nav>
+<div id="admin-section" style="display:none;">
+  <h2>Add Book</h2>
 
+  <input id="title" placeholder="Title">
+  <input id="isbn" placeholder="ISBN">
+  <input id="price" placeholder="Price">
+
+  <button onclick="addBook()">Add Book</button>
+</div>
 <section class="hero">
   <div class="hero-left">
     <p class="hero-eyebrow">— Your Literary Universe</p>
@@ -107,6 +116,55 @@
     window.location.href = q ? `search.html?q=${encodeURIComponent(q)}` : 'search.html';
   }
   document.getElementById('hero-search').addEventListener('keydown', e => { if (e.key==='Enter') goSearch(); });
+</script>
+<script>
+/**
+ * Global Sign Out Function
+ */
+function handleSignOut(event) {
+    if (event) event.preventDefault();
+    
+    // Clear all possible session keys
+    localStorage.removeItem('folio_token');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('role');
+    
+    // Refresh to update UI
+    window.location.reload();
+}
+
+/**
+ * Update Nav Button State
+ */
+function updateAuthButton() {
+    const authBtn = document.getElementById('nav-auth-btn');
+    const token = localStorage.getItem('access_token') || localStorage.getItem('folio_token');
+
+    if (token) {
+        authBtn.textContent = 'Sign Out';
+        authBtn.onclick = handleSignOut;
+    } else {
+        authBtn.textContent = 'Sign In';
+        authBtn.onclick = () => window.location.href = 'login.html';
+    }
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', updateAuthButton);
+const role = localStorage.getItem("role");
+
+if (role === "admin" || role === "super_admin") {
+    document.getElementById("admin-section").style.display = "block";
+
+    // hide student stuff (use correct IDs if different)
+    const browse = document.getElementById("browse-section");
+    const cart = document.getElementById("cart-section");
+    const orders = document.getElementById("orders-section");
+
+    if (browse) browse.style.display = "none";
+    if (cart) cart.style.display = "none";
+    if (orders) orders.style.display = "none";
+}
 </script>
 </body>
 </html>

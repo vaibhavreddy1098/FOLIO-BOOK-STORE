@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folio — My Reviews</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <style>
+    .search-section { max-width: 500px; margin: 40px auto; text-align: center; }
+    .review-search-bar { 
+      width: 100%; padding: 15px 25px; border: 1px solid var(--line); 
+      border-radius: 30px; font-family: 'Cormorant Garamond'; 
+      font-size: 1.2rem; outline: none; transition: 0.3s;
+    }
+    .review-search-bar:focus { border-color: var(--ink); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+    
+    .result-item { 
+      background: var(--panel); border: 1px solid var(--line); 
+      border-radius: 15px; padding: 15px 25px; margin-bottom: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .star-btn { font-size: 2.5rem; color: rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; }
+    .star-btn.active { color: var(--accent); }
+
+    .save-review-btn {
+      background: var(--ink); color: #fff; border: none; padding: 15px 40px;
+      border-radius: 30px; font-family: 'DM Mono'; font-size: 0.8rem;
+      letter-spacing: 0.1em; cursor: pointer; transition: 0.3s; width: 100%;
+    }
+    .save-review-btn:hover { background: var(--accent); transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">Fo<span>lio</span></a>
+  <ul class="nav-links">
+    <li><a href="search.html">Browse</a></li>
+    <li><a href="cart.html">Cart</a></li>
+    <li><a href="orders.html">Orders</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="reviews.html" class="active">Reviews</a></li>
+    
+  </ul>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-cart-btn">🛒 Cart</a>
+    <button class="nav-auth-btn" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="page-header">
+  <p class="page-eyebrow">— Community</p>
+  <h1 class="page-title">Your <em>feedback.</em></h1>
+</div>
+
+<div class="body-wrap" style="display: block;">
+  <div class="search-section">
+    <p class="sidebar-title">SEARCH FOR A BOOK TO REVIEW</p>
+    <input type="text" id="book-search" class="review-search-bar" placeholder="Enter book title..." oninput="searchToReview()">
+  </div>
+
+  <div id="search-results" style="max-width: 600px; margin: 0 auto;"></div>
+
+  <div id="review-editor" class="panel" style="display:none; max-width: 600px; margin: 40px auto; padding: 40px;">
+      <h2 id="editing-title" style="font-family:'Cormorant Garamond'; font-size:2rem; margin-bottom:10px;">Write Review</h2>
+      <div id="star-rating" style="margin-bottom:20px;">
+          <span class="star-btn" onclick="setStars(1)">★</span>
+          <span class="star-btn" onclick="setStars(2)">★</span>
+          <span class="star-btn" onclick="setStars(3)">★</span>
+          <span class="star-btn" onclick="setStars(4)">★</span>
+          <span class="star-btn" onclick="setStars(5)">★</span>
+      </div>
+      <textarea id="review-comment" class="editor-textarea" placeholder="Describe your experience with this title..." style="width:100%; min-height:120px; padding:15px; border-radius:12px; border:1px solid var(--line);"></textarea>
+      <button class="save-review-btn" onclick="submitReview()" style="margin-top:20px;">SAVE MY REVIEW</button>
+  </div>
+</div>
+
+<script>
+    const BACKEND = 'http://127.0.0.1:8000';
+    let currentBookId = null;
+    let currentRating = 0;
+
+    function signOut() { localStorage.clear(); window.location.href = 'login.html'; }
+
+    async function searchToReview() {
+        const q = document.getElementById('book-search').value.trim();
+        if(q.length < 2) return;
+        try {
+            const res = await fetch(`${BACKEND}/search_books?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            const books = data.results || data;
+            document.getElementById('search-results').innerHTML = books.map(b => `
+                <div class="result-item">
+                    <span><strong>${b.title}</strong></span>
+                    <button class="btn-ghost" onclick="openEditor(${b.book_id}, '${b.title.replace(/'/g, "\\'")}')">Write/Edit Review</button>
+                </div>
+            `).join('');
+        } catch(e) { console.error(e); }
+    }
+
+    function openEditor(id, title) {
+        currentBookId = id;
+        document.getElementById('editing-title').innerHTML = `Review <em>${title}</em>`;
+        document.getElementById('review-editor').style.display = 'block';
+        setStars(0);
+        document.getElementById('review-comment').value = '';
+    }
+
+    function setStars(n) {
+        currentRating = n;
+        document.querySelectorAll('.star-btn').forEach((s, i) => s.classList.toggle('active', i < n));
+    }
+
+    async function submitReview() {
+        const token = localStorage.getItem('folio_token');
+        if(currentRating === 0) return alert("Select stars!");
+        try {
+            const res = await fetch(`${BACKEND}/reviews/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ book_id: currentBookId, rating: currentRating, comment: document.getElementById('review-comment').value })
+            });
+            if(res.ok) { alert("Review Saved!"); location.reload(); }
+        } catch(e) { alert("Save failed."); }
+    }
+</script>
+</body>
+</html>
